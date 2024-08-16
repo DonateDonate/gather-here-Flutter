@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gather_here/auth/provider/auth_provider.dart';
 import 'package:gather_here/common/components/default_button.dart';
 import 'package:gather_here/common/components/default_layout.dart';
 import 'package:gather_here/common/components/default_text_form_field.dart';
 import 'package:gather_here/common/const/colors.dart';
+import 'package:gather_here/screen/home/home_screen.dart';
+import 'package:go_router/go_router.dart';
 
 class LoginScreen extends StatelessWidget {
   static get name => 'Login';
@@ -66,19 +70,21 @@ class _TitleHeader extends StatelessWidget {
   }
 }
 
-class _IDPWSection extends StatefulWidget {
+class _IDPWSection extends ConsumerStatefulWidget {
   const _IDPWSection({super.key});
 
   @override
-  State<_IDPWSection> createState() => _IDPWSectionState();
+  ConsumerState<_IDPWSection> createState() => _IDPWSectionState();
 }
 
-class _IDPWSectionState extends State<_IDPWSection> {
+class _IDPWSectionState extends ConsumerState<_IDPWSection> {
   final _idController = TextEditingController();
   final _pwController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(authProvider);
+
     return Column(
       children: [
         DefaultTextFormField(
@@ -97,9 +103,18 @@ class _IDPWSectionState extends State<_IDPWSection> {
         SizedBox(height: 40),
         DefaultButton(
           title: '로그인',
-          onTap: () {
-            print(_idController.text);
-            print(_pwController.text);
+          onTap: () async {
+            final result = await ref.read(authProvider.notifier).postLogin(
+                  id: _idController.text,
+                  pw: _pwController.text,
+                );
+
+            if (result) {
+              context.goNamed(HomeScreen.name);
+            } else {
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBar(content: Text('로그인 실패')));
+            }
           },
         ),
       ],
@@ -112,55 +127,57 @@ class _BottomContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      Row(
-        children: [
-          Expanded(
-            child: Container(height: 1.5, color: AppColor.grey1),
-          ),
-          SizedBox(width: 30),
-          Text('또는',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-          SizedBox(width: 30),
-          Expanded(
-            child: Container(height: 1.5, color: AppColor.grey1),
-          ),
-        ],
-      ),
-      SizedBox(height: 80),
-      Text(
-        '비밀번호를 잊으셨나요?',
-        style: TextStyle(
-          fontSize: 16,
-          color: AppColor.grey1,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      SizedBox(height: 10),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            '계정이 없으신가요?',
-            style: TextStyle(
-              fontSize: 16,
-              color: AppColor.grey1,
-              fontWeight: FontWeight.w500,
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Container(height: 1.5, color: AppColor.grey1),
             ),
+            SizedBox(width: 30),
+            Text('또는',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+            SizedBox(width: 30),
+            Expanded(
+              child: Container(height: 1.5, color: AppColor.grey1),
+            ),
+          ],
+        ),
+        SizedBox(height: 80),
+        Text(
+          '비밀번호를 잊으셨나요?',
+          style: TextStyle(
+            fontSize: 16,
+            color: AppColor.grey1,
+            fontWeight: FontWeight.w500,
           ),
-          TextButton(
-            onPressed: () {},
-            child: Text(
-              '가입하기',
+        ),
+        SizedBox(height: 10),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '계정이 없으신가요?',
               style: TextStyle(
                 fontSize: 16,
-                color: AppColor.blue,
-                fontWeight: FontWeight.w700,
+                color: AppColor.grey1,
+                fontWeight: FontWeight.w500,
               ),
             ),
-          ),
-        ],
-      ),
-    ]);
+            TextButton(
+              onPressed: () {},
+              child: Text(
+                '가입하기',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: AppColor.blue,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 }

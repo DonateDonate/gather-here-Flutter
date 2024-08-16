@@ -3,7 +3,7 @@ import 'package:gather_here/screen/design_system/design_system_screen.dart';
 import 'package:gather_here/screen/design_system/design_system_text_form_field_screen.dart';
 
 import 'package:gather_here/screen/home/home_screen.dart';
-import 'package:gather_here/screen/login/login_screen.dart';
+import 'package:gather_here/auth/view/login_screen/login_screen.dart';
 import 'package:gather_here/screen/splash/splash_screen.dart';
 
 import 'package:go_router/go_router.dart';
