@@ -1,14 +1,31 @@
 import 'package:gather_here/screen/design_system/design_system_button_screen.dart';
 import 'package:gather_here/screen/design_system/design_system_screen.dart';
 import 'package:gather_here/screen/design_system/design_system_text_form_field_screen.dart';
+
 import 'package:gather_here/screen/home/home_screen.dart';
+import 'package:gather_here/screen/login/login_screen.dart';
+import 'package:gather_here/screen/splash/splash_screen.dart';
+
 import 'package:go_router/go_router.dart';
 
 final router = GoRouter(
+  initialLocation: '/splash',
   routes: [
     GoRoute(
-      path: '/',
-      name: 'home',
+      path: '/splash',
+      name: SplashScreen.name,
+      builder: (context, state) => SplashScreen(),
+    ),
+
+    GoRoute(
+      path: '/login',
+      name: LoginScreen.name,
+      builder: (context, state) => LoginScreen(),
+    ),
+
+    GoRoute(
+      path: '/home',
+      name: HomeScreen.name,
       builder: (context, state) => HomeScreen(),
     ),
   ],

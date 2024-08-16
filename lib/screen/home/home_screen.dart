@@ -4,6 +4,8 @@ import 'package:gather_here/common/components/default_layout.dart';
 import 'package:go_router/go_router.dart';
 
 class HomeScreen extends StatelessWidget {
+  static get name => 'home';
+
   const HomeScreen({super.key});
 
   @override

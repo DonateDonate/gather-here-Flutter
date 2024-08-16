@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:gather_here/common/router/router.dart';
 
 void main() {
-  // runApp(_App());
-  runApp(_DesignSystemApp());
+  runApp(_App());
+  // runApp(_DesignSystemApp());
 }
 
 class _App extends StatelessWidget {
