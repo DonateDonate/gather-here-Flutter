@@ -2,6 +2,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'login_model.g.dart';
 
+// Post: /login Request Body
 @JsonSerializable()
 class LoginModel {
   final String identity;
