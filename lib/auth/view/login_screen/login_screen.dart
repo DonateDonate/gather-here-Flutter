@@ -78,8 +78,19 @@ class _IDPWSection extends ConsumerStatefulWidget {
 }
 
 class _IDPWSectionState extends ConsumerState<_IDPWSection> {
-  final _idController = TextEditingController();
-  final _pwController = TextEditingController();
+
+  // TODO: - 상태관리하기..
+  String idText = '';
+  String pwText = '';
+
+  bool get isButtonEnabled {
+    return idText.length == 11 && (pwText.length >= 4 && pwText.length <= 10);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,23 +101,32 @@ class _IDPWSectionState extends ConsumerState<_IDPWSection> {
         DefaultTextFormField(
           title: '아이디',
           label: '휴대폰 번호',
-          controller: _idController,
           keyboardType: TextInputType.number,
+          onChanged: (text) {
+            setState(() {
+              this.idText = text;
+            });
+          },
         ),
         SizedBox(height: 20),
         DefaultTextFormField(
           title: '비밀번호',
           label: '4 ~ 10자',
           obscureText: true,
-          controller: _pwController,
+          onChanged: (text) {
+            setState(() {
+              this.pwText = text;
+            });
+          },
         ),
         SizedBox(height: 40),
         DefaultButton(
           title: '로그인',
+          isEnabled: isButtonEnabled,
           onTap: () async {
             final result = await ref.read(authProvider.notifier).postLogin(
-                  id: _idController.text,
-                  pw: _pwController.text,
+                  id: idText,
+                  pw: pwText,
                 );
 
             if (result) {

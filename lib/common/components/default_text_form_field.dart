@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gather_here/common/const/colors.dart';
 
@@ -12,7 +13,7 @@ class DefaultTextFormField extends StatefulWidget {
   final String label; // textField에 들어갈 안내 텍스트
   final Color filledColor; // textField 배경 색
   final double radius; // textField 곡률
-  final TextEditingController controller; // 입력된 텍스트를 제어 및 관리
+  final TextEditingController? controller; // 입력된 텍스트를 제어 및 관리
   final FormFieldValidator? formFieldValidator; // 텍스트 입력 검증
   final String? errorText; // 에러일 경우 보여줄 텍스트
   final TextInputType keyboardType; // 키보드 입력 타입
@@ -21,7 +22,7 @@ class DefaultTextFormField extends StatefulWidget {
 
   const DefaultTextFormField({
     required this.label,
-    required this.controller,
+    this.controller,
     this.height = 60,
     this.width = double.infinity,
     this.title = '',

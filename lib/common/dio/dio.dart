@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:gather_here/common/storage/storage.dart';
@@ -19,20 +20,35 @@ class CustomInterceptor extends Interceptor {
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    print('[REQ] [${options.method}] ${options.uri}');
+    debugPrint('[REQ] [${options.method}] ${options.uri}');
     super.onRequest(options, handler);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    print('[ERR] [${err.requestOptions.method}] ${err.requestOptions.uri}');
+    debugPrint('[ERR] [${err.requestOptions.method}] ${err.requestOptions.uri}');
+
+    debugPrint(err.stackTrace.toString());
+
     super.onError(err, handler);
   }
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    print(
+    debugPrint(
         '[RES] [${response.requestOptions.method}] ${response.requestOptions.uri}');
+
+    // Headers에 토큰이 있다면 토큰정보 스토리지에 저장
+    final refreshToken = response.headers.value('refresh-token');
+    if (refreshToken != null) {
+      storage.write(key: StorageKey.refreshToken.name, value: refreshToken);
+    }
+
+    final accessToken = response.headers.value('authorization');
+    if (accessToken != null) {
+      storage.write(key: StorageKey.accessToken.name, value: accessToken);
+    }
+
     super.onResponse(response, handler);
   }
 }
