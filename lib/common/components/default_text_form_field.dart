@@ -14,6 +14,7 @@ class DefaultTextFormField extends StatefulWidget {
   final double radius; // textField 곡률
   final TextEditingController controller; // 입력된 텍스트를 제어 및 관리
   final FormFieldValidator? formFieldValidator; // 텍스트 입력 검증
+  final String? errorText; // 에러일 경우 보여줄 텍스트
   final TextInputType keyboardType; // 키보드 입력 타입
   final bool obscureText; // 입력된 텍스트 가리기, 비밀번호 입력 시 true
   final OnChanged? onChanged; // 입력된 텍스트가 수정될  호출되는 콜백
@@ -27,6 +28,7 @@ class DefaultTextFormField extends StatefulWidget {
     this.filledColor = AppColor.grey4,
     this.radius = 12,
     this.formFieldValidator,
+    this.errorText = null,
     this.keyboardType = TextInputType.text,
     this.obscureText = false,
     this.onChanged,
@@ -38,6 +40,7 @@ class DefaultTextFormField extends StatefulWidget {
 }
 
 class _DefaultTextFormFieldState extends State<DefaultTextFormField> {
+
   @override
   Widget build(BuildContext context) {
     double calculatedHeight = widget.height;
@@ -56,7 +59,7 @@ class _DefaultTextFormFieldState extends State<DefaultTextFormField> {
               style: const TextStyle(
                 fontSize: 16.0,
                 color: AppColor.black,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w700,
               ),
             ),
           if (widget.title.isNotEmpty)
@@ -72,6 +75,7 @@ class _DefaultTextFormFieldState extends State<DefaultTextFormField> {
             onChanged: widget.onChanged,
             style: const TextStyle(fontSize: 16, color: AppColor.black),
             decoration: InputDecoration(
+              errorText: widget.errorText,
               labelText: widget.label,
               labelStyle: const TextStyle(fontSize: 16, color: Colors.black),
               filled: true,
