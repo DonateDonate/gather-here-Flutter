@@ -5,10 +5,10 @@ import 'package:gather_here/common/repository/auth_repository.dart';
 
 // State
 class LoginState {
-  String id;
-  String pw;
+  String id; // id값
+  String pw; // password 값
 
-  bool get isButtonEnalbed {
+  bool get isButtonEnalbed { // button의 enabled 상태
     return id.length == 11 && pw.length >= 4 && pw.length <= 10;
   }
 
@@ -20,7 +20,7 @@ class LoginState {
 
 // Provider
 
-final loginProvider = StateNotifierProvider<LoginProvider, LoginState>((ref) {
+final loginProvider = AutoDisposeStateNotifierProvider<LoginProvider, LoginState>((ref) {
   final repo = ref.watch(authRepositoryProvider);
   return LoginProvider(authRepo: repo);
 });
