@@ -1,10 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart' hide Headers;
+import 'package:gather_here/common/model/sign_up_model.dart';
 import 'package:retrofit/http.dart';
 
 import 'package:gather_here/common/dio/dio.dart';
 import 'package:gather_here/common/const/const.dart';
-import 'package:gather_here/auth/model/login_model.dart';
+import 'package:gather_here/common/model/login_model.dart';
 
 part 'auth_repository.g.dart';
 
@@ -23,4 +24,8 @@ abstract class AuthRepository {
     @Body() required LoginModel body,
   });
 
+  @POST('/members')
+  Future<void> postSignUp({
+    @Body() required SignUpModel body,
+  });
 }

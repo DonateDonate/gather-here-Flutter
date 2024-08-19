@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gather_here/common/components/default_layout.dart';
-import 'package:gather_here/auth/view/login_screen/login_screen.dart';
+import 'package:gather_here/screen/login/login_screen.dart';
 import 'package:go_router/go_router.dart';
 
 class SplashScreen extends StatefulWidget {

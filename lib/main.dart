@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gather_here/common/provider/provider_observer.dart';
 import 'package:gather_here/common/router/router.dart';
 
 void main() {
   runApp(
-    ProviderScope(child: _App()),
+    ProviderScope(observers: [Logger()], child: _App()),
   );
 
   // runApp(_DesignSystemApp());

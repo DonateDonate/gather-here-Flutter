@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gather_here/auth/provider/auth_provider.dart';
+import 'package:go_router/go_router.dart';
+
+import 'package:gather_here/screen/login/login_provider.dart';
+import 'package:gather_here/screen/sign_up/sign_up_screen.dart';
 import 'package:gather_here/common/components/default_button.dart';
 import 'package:gather_here/common/components/default_layout.dart';
 import 'package:gather_here/common/components/default_text_form_field.dart';
 import 'package:gather_here/common/const/colors.dart';
 import 'package:gather_here/screen/home/home_screen.dart';
-import 'package:go_router/go_router.dart';
 
 class LoginScreen extends StatelessWidget {
   static get name => 'Login';
@@ -18,7 +20,7 @@ class LoginScreen extends StatelessWidget {
     return DefaultLayout(
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 30.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
           child: CustomScrollView(
             physics: NeverScrollableScrollPhysics(),
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -30,7 +32,9 @@ class LoginScreen extends StatelessWidget {
                     SizedBox(height: 30),
                     _TitleHeader(),
                     Spacer(),
-                    _IDPWSection(),
+                    _TextFields(),
+                    SizedBox(height: 40),
+                    _LoginButton(),
                     SizedBox(height: 40),
                     _BottomContainer(),
                     SizedBox(height: 10),
@@ -70,31 +74,11 @@ class _TitleHeader extends StatelessWidget {
   }
 }
 
-class _IDPWSection extends ConsumerStatefulWidget {
-  const _IDPWSection({super.key});
+class _TextFields extends ConsumerWidget {
 
   @override
-  ConsumerState<_IDPWSection> createState() => _IDPWSectionState();
-}
-
-class _IDPWSectionState extends ConsumerState<_IDPWSection> {
-
-  // TODO: - 상태관리하기..
-  String idText = '';
-  String pwText = '';
-
-  bool get isButtonEnabled {
-    return idText.length == 11 && (pwText.length >= 4 && pwText.length <= 10);
-  }
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final state = ref.watch(authProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final vm = ref.watch(loginProvider);
 
     return Column(
       children: [
@@ -103,9 +87,7 @@ class _IDPWSectionState extends ConsumerState<_IDPWSection> {
           label: '휴대폰 번호',
           keyboardType: TextInputType.number,
           onChanged: (text) {
-            setState(() {
-              this.idText = text;
-            });
+            ref.read(loginProvider.notifier).idValueChanged(value: text);
           },
         ),
         SizedBox(height: 20),
@@ -114,33 +96,38 @@ class _IDPWSectionState extends ConsumerState<_IDPWSection> {
           label: '4 ~ 10자',
           obscureText: true,
           onChanged: (text) {
-            setState(() {
-              this.pwText = text;
-            });
-          },
-        ),
-        SizedBox(height: 40),
-        DefaultButton(
-          title: '로그인',
-          isEnabled: isButtonEnabled,
-          onTap: () async {
-            final result = await ref.read(authProvider.notifier).postLogin(
-                  id: idText,
-                  pw: pwText,
-                );
-
-            if (result) {
-              context.goNamed(HomeScreen.name);
-            } else {
-              ScaffoldMessenger.of(context)
-                  .showSnackBar(SnackBar(content: Text('로그인 실패')));
-            }
+            ref.read(loginProvider.notifier).pwValueChanged(value: text);
           },
         ),
       ],
     );
   }
 }
+
+class _LoginButton extends ConsumerWidget {
+  const _LoginButton({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final vm = ref.watch(loginProvider);
+
+    return DefaultButton(
+      title: '로그인',
+      isEnabled: vm.isButtonEnalbed,
+      onTap: () async {
+        final result = await ref.read(loginProvider.notifier).postLogin();
+
+        if (result) {
+          context.goNamed(HomeScreen.name);
+        } else {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('로그인 실패')));
+        }
+      },
+    );
+  }
+}
+
 
 class _BottomContainer extends StatelessWidget {
   const _BottomContainer({super.key});
@@ -185,7 +172,9 @@ class _BottomContainer extends StatelessWidget {
               ),
             ),
             TextButton(
-              onPressed: () {},
+              onPressed: () {
+                context.goNamed(SignUpScreen.name);
+              },
               child: Text(
                 '가입하기',
                 style: TextStyle(
