@@ -1,23 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gather_here/common/components/default_layout.dart';
+import 'package:gather_here/screen/home/home_screen.dart';
 import 'package:gather_here/screen/login/login_screen.dart';
+import 'package:gather_here/screen/splash/splash_provider.dart';
 import 'package:go_router/go_router.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   static get name => 'splash';
 
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
 
-    _goLogin();
+    _checkLoginState();
   }
 
   @override
@@ -32,12 +35,15 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 
-  void _goLogin() async {
-    await Future.delayed(
-      Duration(seconds: 2),
-      () {
-        context.goNamed(LoginScreen.name);
-      },
-    );
+  void _checkLoginState() async {
+    await Future.delayed(Duration(seconds: 2));
+
+    final result = await ref.read(splashProvier.notifier).getAppInfo();
+
+    if (result) {
+      context.goNamed(HomeScreen.name);
+    } else {
+      context.goNamed(LoginScreen.name);
+    }
   }
 }

@@ -7,4 +7,5 @@ final storageProvider = Provider((ref) => FlutterSecureStorage());
 enum StorageKey {
   accessToken,
   refreshToken,
+  appInfo,
 }
