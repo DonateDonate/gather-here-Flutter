@@ -113,7 +113,7 @@ class _LoginButton extends ConsumerWidget {
 
     return DefaultButton(
       title: '로그인',
-      isEnabled: vm.isButtonEnalbed,
+      isEnabled: vm.isButtonEnabled,
       onTap: () async {
         final result = await ref.read(loginProvider.notifier).postLogin();
 

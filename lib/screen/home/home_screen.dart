@@ -15,9 +15,23 @@ class HomeScreen extends StatelessWidget {
       backgroundColor: Colors.red,
       appBarBackgroundColor: Colors.green,
       child: Center(
-        child: ElevatedButton(onPressed: (){
-          context.pushNamed('home');
-        }, child: Text('Push')),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                context.pushNamed('home');
+              },
+              child: Text('Home'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                context.pushNamed('my_page');
+              },
+              child: Text('마이페이지'),
+            ),
+          ],
+        ),
       ),
     );
   }
