@@ -6,8 +6,13 @@ import 'package:gather_here/common/storage/storage.dart';
 
 final dioProvider = Provider((ref) {
   final dio = Dio();
+
   final storage = ref.watch(storageProvider);
-  dio.interceptors.add(CustomInterceptor(storage: storage));
+
+  dio.interceptors.add(
+    CustomInterceptor(storage: storage),
+  );
+
   return dio;
 });
 
@@ -19,14 +24,38 @@ class CustomInterceptor extends Interceptor {
   });
 
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
     debugPrint('[REQ] [${options.method}] ${options.uri}');
+
+    if (options.headers['accessToken'] == 'true') {
+      options.headers.remove('accessToken');
+
+      final token = await storage.read(key: StorageKey.accessToken.name);
+
+      options.headers.addAll({
+        'authorization': 'Bearer $token',
+      });
+      debugPrint('[REQ] accessToken 저장');
+    }
+
+    if (options.headers['refreshToken'] == 'true') {
+      options.headers.remove('refreshToken');
+
+      final token = await storage.read(key: StorageKey.refreshToken.name);
+
+      options.headers.addAll({
+        'authorization': 'Bearer $token',
+      });
+      debugPrint('[REQ] refreshToken 저장');
+    }
+
     super.onRequest(options, handler);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    debugPrint('[ERR] [${err.requestOptions.method}] ${err.requestOptions.uri}');
+    debugPrint(
+        '[ERR] [${err.requestOptions.method}] ${err.requestOptions.uri}');
 
     debugPrint(err.stackTrace.toString());
 

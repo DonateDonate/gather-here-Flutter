@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gather_here/common/model/sign_up_model.dart';
+import 'package:gather_here/common/model/request/sign_up_model.dart';
 import 'package:gather_here/common/repository/auth_repository.dart';
 
 // State
