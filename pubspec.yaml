@@ -41,7 +41,8 @@ dependencies:
   flutter_secure_storage: ^5.0.2
   retrofit: ^4.2.0
   logger: any  #for logging purpose
-  json_annotation: ^4.8.1
+  json_annotation: ^4.9.0
+  image_picker: ^0.8.7+4
 
 dev_dependencies:
   flutter_test:

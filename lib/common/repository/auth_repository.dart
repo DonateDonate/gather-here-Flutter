@@ -28,4 +28,10 @@ abstract class AuthRepository {
   Future<void> postSignUp({
     @Body() required SignUpModel body,
   });
+
+  @DELETE('/members')
+  @Headers({
+    'accessToken': 'true',
+  })
+  Future<void> deleteMember();
 }

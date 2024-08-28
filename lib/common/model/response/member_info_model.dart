@@ -5,7 +5,7 @@ part 'member_info_model.g.dart';
 @JsonSerializable()
 class MemberInfoModel {
   String nickname;
-  int identity; // 전화번호
+  String identity; // 전화번호
   String? profileImageUrl;
 
   MemberInfoModel({

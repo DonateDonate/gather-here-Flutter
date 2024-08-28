@@ -17,7 +17,7 @@ class DefaultLayout extends StatelessWidget {
   const DefaultLayout({
     required this.child,
     this.title,
-    this.titleColor = AppColor.black,
+    this.titleColor = AppColor.black1,
     this.fontSize = 24,
     this.fontWeight = FontWeight.w700,
     this.backgroundColor = AppColor.background,
@@ -38,6 +38,7 @@ class DefaultLayout extends StatelessWidget {
     if (title == null) return null;
 
     return AppBar(
+      centerTitle: true,
       foregroundColor: titleColor,
       backgroundColor: appBarBackgroundColor,
       elevation: 0,
