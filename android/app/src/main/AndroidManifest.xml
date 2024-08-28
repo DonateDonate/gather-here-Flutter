@@ -1,4 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+
     <application
         android:label="gather_here"
         android:name="${applicationName}"
@@ -32,6 +37,7 @@
             android:value="2" />
         <meta-data android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyD7sFeLBjCw1KSxTISgD-uVYGTIKYh_3-w" />
+
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gather_here/common/location/location_manager.dart';
 import 'package:gather_here/common/model/search_response_model.dart';
 
 import 'package:gather_here/common/repository/map_repository.dart';
@@ -34,12 +35,15 @@ class HomeProvider extends StateNotifier<HomeState> {
   void _setState() {
     state = HomeState(query: state.query, lat: state.lat, lon: state.lon, results: state.results, selectedResult: state.selectedResult);
   }
+
   void queryChanged({required String value}) async {
     state.query = value;
-    _setState();
 
-    state.lat = 37.413294;
-    state.lon = 126.734086;
+    if (value.isEmpty) {
+      state.results = [];
+      state.selectedResult = null;
+    }
+    _setState();
 
     // 현재좌표와, 쿼리가 있다면 검색하기
     if (state.query != null && state.query!.isNotEmpty && state.lat != null && state.lon != null) {
@@ -48,6 +52,13 @@ class HomeProvider extends StateNotifier<HomeState> {
       _setState();
       print('result: ${state.results.length}');
     }
+  }
+
+  void getCurrentLocation() async {
+    final position = await LocationManager.getCurrentPosition();
+    state.lat = position.latitude;
+    state.lon = position.longitude;
+    _setState();
   }
 
   void tapSearchResult({required SearchDocumentsModel model}) {

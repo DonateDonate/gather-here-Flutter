@@ -18,8 +18,6 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultLayout(
-      backgroundColor: Colors.red,
-      appBarBackgroundColor: Colors.green,
       child: Stack(
         children: [
           _Map(),
@@ -100,14 +98,14 @@ class _SearchBarState extends ConsumerState<_SearchBar> {
 }
 
 // Maps
-class _Map extends StatefulWidget {
+class _Map extends ConsumerStatefulWidget {
   const _Map({super.key});
 
   @override
-  State<_Map> createState() => _MapState();
+  ConsumerState<_Map> createState() => _MapState();
 }
 
-class _MapState extends State<_Map> {
+class _MapState extends ConsumerState<_Map> {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
 
@@ -117,9 +115,26 @@ class _MapState extends State<_Map> {
   );
 
   @override
+  void initState() {
+    super.initState();
+
+    ref.read(homeProvider.notifier).getCurrentLocation();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final vm = ref.watch(homeProvider);
+
     return GoogleMap(
       initialCameraPosition: _kGooglePlex,
+      myLocationEnabled: true,
+      myLocationButtonEnabled: true,
+      markers: vm.results.map(
+        (result) => Marker(
+          markerId: MarkerId('${result.hashCode}'),
+          position: LatLng(double.parse(result.y), double.parse(result.x)),
+        ),
+      ).toSet(),
       onMapCreated: (controller) {
         _controller.complete(controller);
       },

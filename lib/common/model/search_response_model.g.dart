@@ -29,8 +29,8 @@ SearchDocumentsModel _$SearchDocumentsModelFromJson(
       palce_url: json['palce_url'] as String?,
       distance: json['distance'] as String?,
       phone: json['phone'] as String?,
-      x: json['x'] as String?,
-      y: json['y'] as String?,
+      x: json['x'] as String,
+      y: json['y'] as String,
     );
 
 Map<String, dynamic> _$SearchDocumentsModelToJson(

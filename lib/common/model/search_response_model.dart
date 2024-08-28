@@ -24,8 +24,8 @@ class SearchDocumentsModel {
   final String? palce_url; // 장소 url
   final String? distance; // 거리
   final String? phone; // 전화번호
-  final String? x; // 경도
-  final String? y; // 위도
+  final String x; // 경도
+  final String y; // 위도
 
   SearchDocumentsModel({
     required this.category_group_name,
