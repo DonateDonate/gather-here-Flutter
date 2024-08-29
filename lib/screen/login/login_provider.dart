@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:gather_here/common/model/login_model.dart';
+import 'package:gather_here/common/model/request/login_model.dart';
 import 'package:gather_here/common/repository/auth_repository.dart';
 
 // State
@@ -8,7 +8,7 @@ class LoginState {
   String id; // id값
   String pw; // password 값
 
-  bool get isButtonEnalbed { // button의 enabled 상태
+  bool get isButtonEnabled { // button의 enabled 상태
     return id.length == 11 && pw.length >= 4 && pw.length <= 10;
   }
 

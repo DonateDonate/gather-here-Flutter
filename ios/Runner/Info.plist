@@ -55,5 +55,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+  <string>프로필 사진 변경을 위한 카메라 접근 권한이 필요해요.</string>
+  <key>NSPhotoLibraryUsageDescription</key>
+  <string>프로필 사진 변경을 위한 갤러리 접근 권한이 필요해요.</string>
 </dict>
 </plist>

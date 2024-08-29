@@ -59,7 +59,7 @@ class _DefaultTextFormFieldState extends State<DefaultTextFormField> {
               widget.title,
               style: const TextStyle(
                 fontSize: 16.0,
-                color: AppColor.black,
+                color: AppColor.black1,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -70,11 +70,11 @@ class _DefaultTextFormFieldState extends State<DefaultTextFormField> {
           TextFormField(
             controller: widget.controller,
             validator: widget.formFieldValidator,
-            cursorColor: AppColor.black,
+            cursorColor: AppColor.black1,
             keyboardType: widget.keyboardType,
             obscureText: widget.obscureText,
             onChanged: widget.onChanged,
-            style: const TextStyle(fontSize: 16, color: AppColor.black),
+            style: const TextStyle(fontSize: 16, color: AppColor.black1),
             decoration: InputDecoration(
               errorText: widget.errorText,
               labelText: widget.label,
@@ -93,7 +93,7 @@ class _DefaultTextFormFieldState extends State<DefaultTextFormField> {
                   borderRadius: BorderRadius.circular(widget.radius)),
               focusedBorder: OutlineInputBorder(
                   borderSide: const BorderSide(
-                    color: AppColor.black,
+                    color: AppColor.black1,
                   ),
                   borderRadius: BorderRadius.circular(widget.radius)),
             ),

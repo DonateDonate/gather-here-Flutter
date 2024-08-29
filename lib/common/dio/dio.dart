@@ -6,8 +6,13 @@ import 'package:gather_here/common/storage/storage.dart';
 
 final dioProvider = Provider((ref) {
   final dio = Dio();
+
   final storage = ref.watch(storageProvider);
-  dio.interceptors.add(CustomInterceptor(storage: storage));
+
+  dio.interceptors.add(
+    CustomInterceptor(storage: storage),
+  );
+
   return dio;
 });
 
@@ -27,6 +32,7 @@ class CustomInterceptor extends Interceptor {
 
       final token = await storage.read(key: StorageKey.accessToken.name);
       options.headers.addAll({'Authorization': token});
+      debugPrint('[REQ] accessToken 저장');
     }
 
     if (options.headers['refreshToken'] == 'false') {
@@ -34,6 +40,7 @@ class CustomInterceptor extends Interceptor {
 
       final token = await storage.read(key: StorageKey.refreshToken.name);
       options.headers.addAll({'Refresh-token': token});
+      debugPrint('[REQ] refreshToken 저장');
     }
 
     super.onRequest(options, handler);
