@@ -21,7 +21,7 @@ class SearchDocumentsModel {
   final String? address_name; // 주소
   final String? road_address_name; // 도로명주소
   final String? place_name; // 장소 이름
-  final String? palce_url; // 장소 url
+  final String? place_url; // 장소 url
   final String? distance; // 거리
   final String? phone; // 전화번호
   final String x; // 경도
@@ -32,7 +32,7 @@ class SearchDocumentsModel {
     required this.address_name,
     required this.road_address_name,
     required this.place_name,
-    required this.palce_url,
+    required this.place_url,
     required this.distance,
     required this.phone,
     required this.x,

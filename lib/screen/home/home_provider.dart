@@ -62,6 +62,11 @@ class HomeProvider extends StateNotifier<HomeState> {
     }
   }
 
+  void tapLocationMarker(SearchDocumentsModel model) {
+    state.selectedResult = model;
+    _setState();
+  }
+
   void queryChanged({required String value}) async {
     state.query = value;
 

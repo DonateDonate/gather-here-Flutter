@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -48,7 +49,9 @@ class HomeScreen extends ConsumerWidget {
                               DefaultButton(
                                 title: '확인',
                                 onTap: () async {
-                                  final result = await ref.read(homeProvider.notifier).tapInviteButton();
+                                  final result = await ref
+                                      .read(homeProvider.notifier)
+                                      .tapInviteButton();
                                   if (result) {
                                     context.pop();
                                   } else {
@@ -65,7 +68,8 @@ class HomeScreen extends ConsumerWidget {
                 ],
               ),
             ),
-          )
+          ),
+          LocationBottomSheet(),
         ],
       ),
     );
@@ -165,6 +169,7 @@ class _MapState extends ConsumerState<_Map> {
               markerId: MarkerId('${result.hashCode}'),
               position: LatLng(double.parse(result.y), double.parse(result.x)),
               onTap: () {
+                ref.read(homeProvider.notifier).tapLocationMarker(result);
                 print(result.toString());
               },
             ),
@@ -172,6 +177,92 @@ class _MapState extends ConsumerState<_Map> {
           .toSet(),
       onMapCreated: (controller) {
         _controller.complete(controller);
+      },
+    );
+  }
+}
+
+// 위치정보 bottom sheet
+class LocationBottomSheet extends ConsumerStatefulWidget {
+  const LocationBottomSheet({super.key});
+
+  @override
+  ConsumerState<LocationBottomSheet> createState() =>
+      _LocationBottomSheetState();
+}
+
+class _LocationBottomSheetState extends ConsumerState<LocationBottomSheet> {
+  double _sheetPosition = 0.05; // bottom sheet 시작 높이
+  final double _maxPosition = 0.3;
+  final double _minPosition = 0.05;
+  final double _dragSensitivity = 600;
+
+  @override
+  Widget build(BuildContext context) {
+    final vm = ref.watch(homeProvider);
+
+    return DraggableScrollableSheet(
+      initialChildSize: _sheetPosition,
+      minChildSize: _minPosition,
+      builder: (context, scrollController) {
+        return Container(
+          color: Colors.white,
+          child: Column(
+            children: [
+              GestureDetector(
+                onVerticalDragUpdate: (detail) {
+                  setState(() {
+                    _sheetPosition -= detail.delta.dy / _dragSensitivity;
+
+                    if (_sheetPosition < _minPosition) {
+                      _sheetPosition = _minPosition;
+                    }
+                    if (_sheetPosition > _maxPosition) {
+                      _sheetPosition = _maxPosition;
+                    }
+                  });
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    width: 50,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: AppColor.grey2,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+              ),
+              if (vm.selectedResult != null)
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${vm.selectedResult?.place_name}',
+                            style: TextStyle(
+                                fontSize: 24, fontWeight: FontWeight.w700),
+                          ),
+                          Text('${vm.selectedResult?.road_address_name}'),
+                          Text('현위치로부터 ${vm.selectedResult?.distance}m'),
+                          const SizedBox(height: 20),
+                          DefaultButton(
+                            title: '목적지로 설정',
+                            height: 40,
+                            onTap: () {},
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                )
+            ],
+          ),
+        );
       },
     );
   }
