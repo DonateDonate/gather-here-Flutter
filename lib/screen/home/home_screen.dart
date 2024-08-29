@@ -253,7 +253,45 @@ class _LocationBottomSheetState extends ConsumerState<LocationBottomSheet> {
                           DefaultButton(
                             title: '목적지로 설정',
                             height: 40,
-                            onTap: () {},
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: Text(
+                                        '${MediaQuery.of(context).size.height}'),
+                                    content: Container(
+                                      height: 100,
+                                      child: Column(
+                                        children: [
+                                          GestureDetector(
+                                            onTap: () async {
+// TODO: DatePicker
+                                            },
+                                            child: Text('날짜: ${vm.targetDate}'),
+                                          ),
+                                          GestureDetector(
+                                            onTap: () async {
+// TODO: TimePicker
+                                            },
+                                            child: Text('시간: ${vm.targetTime}'),
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                    actions: [
+                                      DefaultButton(
+                                        title: '위치공유 시작하기',
+                                        onTap: () async {
+                                          final result = await ref.read(homeProvider.notifier).tapStartSharingButton();
+                                          print(result);
+                                        },
+                                      )
+                                    ],
+                                  );
+                                },
+                              );
+                            },
                           )
                         ],
                       ),

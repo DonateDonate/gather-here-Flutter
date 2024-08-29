@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart' hide Headers;
+import 'package:gather_here/common/model/room_create_model.dart';
 import 'package:retrofit/http.dart';
 
 import 'package:gather_here/common/const/const.dart';
@@ -25,5 +26,13 @@ abstract class RoomRepository {
   @POST('/join')
   Future<RoomResponseModel> postJoinRoom({
     @Body() required RoomJoinModel body,
-});
+  });
+
+  @Headers({
+    'accessToken': 'true',
+  })
+  @POST('')
+  Future<RoomResponseModel> postCreateRoom({
+    @Body() required RoomCreateModel body,
+  });
 }
