@@ -4,7 +4,7 @@ part 'profile_image_url_model.g.dart';
 
 @JsonSerializable()
 class ProfileImageUrlModel {
-  String imageUrl;
+  final String imageUrl;
 
   ProfileImageUrlModel({
     required this.imageUrl,

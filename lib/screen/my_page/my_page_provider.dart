@@ -7,6 +7,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:gather_here/common/model/request/nickname_model.dart';
 import 'package:gather_here/common/model/request/password_model.dart';
 import 'package:gather_here/common/model/response/member_info_model.dart';
+import 'package:gather_here/common/model/response/profile_image_url_model.dart';
 import 'package:gather_here/common/repository/member_repository.dart';
 import 'package:gather_here/common/storage/storage.dart';
 
@@ -78,8 +79,11 @@ class MyPageProvider extends StateNotifier<AsyncValue<MemberInfoModel>> {
         ),
       );
       if (response.statusCode == 200) {
+        final profileImageUrlModel =
+            ProfileImageUrlModel.fromJson(response.data);
         debugPrint('url: ${response.data['imageUrl']}');
-        getMemberInfo(); // 서버에서 imageUrl을 주지만 그냥 전체 api를 다시 호출했음
+        state = AsyncValue.data(state.value!
+            .copyWith(profileImageUrl: profileImageUrlModel.imageUrl));
         return true;
       } else {
         debugPrint('Server responded with status code: ${response.statusCode}');
@@ -94,7 +98,7 @@ class MyPageProvider extends StateNotifier<AsyncValue<MemberInfoModel>> {
 
   Future<bool> changeNickName(String nickName) async {
     try {
-      await memberRepository.patchNickName(
+      await memberRepository.patchChangeNickName(
           body: NicknameModel(nickname: nickName));
       getMemberInfo();
       return true;
@@ -106,7 +110,7 @@ class MyPageProvider extends StateNotifier<AsyncValue<MemberInfoModel>> {
 
   Future<bool> changePassWord(String passWord) async {
     try {
-      await memberRepository.patchPassWord(
+      await memberRepository.patchChangePassWord(
           body: PasswordModel(password: passWord));
       return true;
     } catch (e) {
@@ -118,14 +122,11 @@ class MyPageProvider extends StateNotifier<AsyncValue<MemberInfoModel>> {
   Future<bool> deleteMember() async {
     try {
       await authRepository.deleteMember();
+      await storage.deleteAll()
       return true;
     } catch (e) {
       debugPrint('deleteMember Err: $e');
       return false;
     }
-  }
-
-  Future<void> deleteTokens() async {
-    await storage.deleteAll();
   }
 }

@@ -13,14 +13,14 @@ part 'member_repository.g.dart';
 
 final memberRepositoryProvider = Provider((ref) {
   final dio = ref.watch(dioProvider);
-  return MemberRepository(dio, baseUrl: Const.baseUrl);
+  return MemberRepository(dio, baseUrl: Const.baseUrl+'/members');
 });
 
 @RestApi()
 abstract class MemberRepository {
   factory MemberRepository(Dio dio, {String baseUrl}) = _MemberRepository;
 
-  @GET('/members')
+  @GET('')
   @Headers({
     'accessToken': 'true',
   })
@@ -35,19 +35,19 @@ abstract class MemberRepository {
   //   @Part() required MultipartFile image,
   // });
 
-  @PATCH('/members/password')
+  @PATCH('/password')
   @Headers({
     'accessToken': 'true',
   })
-  Future<void> patchPassWord({
+  Future<void> patchChangePassWord({
     @Body() required PasswordModel body,
   });
 
-  @PATCH('/members/nickname')
+  @PATCH('nickname')
   @Headers({
     'accessToken': 'true',
   })
-  Future<void> patchNickName({
+  Future<void> patchChangeNickName({
     @Body() required NicknameModel body,
   });
 }

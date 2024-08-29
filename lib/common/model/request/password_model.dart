@@ -4,7 +4,7 @@ part 'password_model.g.dart';
 
 @JsonSerializable()
 class PasswordModel {
-  String password;
+  final String password;
 
   PasswordModel({
     required this.password,

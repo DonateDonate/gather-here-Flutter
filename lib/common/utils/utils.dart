@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class Utils {
-  void showSnackBar(BuildContext context, String message,
+  Utils._();
+  static void showSnackBar(BuildContext context, String message,
       {int durationSeconds = 3}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

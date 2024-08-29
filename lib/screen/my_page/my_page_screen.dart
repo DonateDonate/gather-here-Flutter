@@ -11,6 +11,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../common/const/colors.dart';
 import '../../common/storage/storage.dart';
+import '../login/login_screen.dart';
 import 'my_page_provider.dart';
 
 class MyPageScreen extends StatelessWidget {
@@ -64,7 +65,7 @@ class _ProfileWidget extends ConsumerWidget {
                       .changeProfileImage(file);
                   final message =
                       result ? '프로필 사진이 업데이트 되었습니다.' : '프로필 사진 업데이트에 실패하였습니다.';
-                  Utils().showSnackBar(context, message);
+                  Utils.showSnackBar(context, message);
                 }
               },
               child: Stack(
@@ -114,14 +115,14 @@ class _ProfileWidget extends ConsumerWidget {
                         return DefaultTextFieldDialog(
                           title: '어떤 닉네임으로 변경할까요?',
                           labels: ['2~20자 이내로 입력해주세요'],
-                          onTap: (nickName) async {
+                          onChanged: (nickName) async {
                             final result = await ref
                                 .read(myPageProvider.notifier)
                                 .changeNickName(nickName.last);
                             final message = result
                                 ? '닉네임 변경에 성공하였습니다.'
                                 : '닉네임 변경에 실패하였습니다.';
-                            Utils().showSnackBar(context, message);
+                            Utils.showSnackBar(context, message);
                           },
                         );
                       },
@@ -190,7 +191,7 @@ class _MenuContainerWidget extends ConsumerWidget {
                       '새 비밀번호 입력',
                       '새 비밀번호 확인',
                     ],
-                    onTap: (textList) async {
+                    onChanged: (textList) async {
                       final currentPw = textList[0];
                       final changePw = textList[1];
                       final changePwConfirm = textList[2];
@@ -201,7 +202,7 @@ class _MenuContainerWidget extends ConsumerWidget {
                             .changePassWord(changePw);
                         final message =
                             result ? '비밀번호가 변경되었습니다.' : '비밀번호 변경에 실패하였습니다.';
-                        Utils().showSnackBar(context, message);
+                        Utils.showSnackBar(context, message);
                       }
                     },
                   );
@@ -226,10 +227,9 @@ class _MenuContainerWidget extends ConsumerWidget {
                           .read(myPageProvider.notifier)
                           .deleteMember();
                       if (result) {
-                        ref.read(myPageProvider.notifier).deleteTokens();
-                        context.go('/login');
+                        context.goNamed(LoginScreen.name);
                       } else {
-                        Utils().showSnackBar(context, '회원탈퇴에 실패했어요');
+                        Utils.showSnackBar(context, '회원탈퇴에 실패했어요');
                       }
                     },
                   );

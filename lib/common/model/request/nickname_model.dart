@@ -4,7 +4,7 @@ part 'nickname_model.g.dart';
 
 @JsonSerializable()
 class NicknameModel {
-  String nickname;
+  final String nickname;
 
   NicknameModel({
     required this.nickname,

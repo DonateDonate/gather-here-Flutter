@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../const/colors.dart';
 import 'default_button.dart';
@@ -6,12 +7,12 @@ import 'default_button.dart';
 class DefaultTextFieldDialog extends StatefulWidget {
   final String title;
   final List<String> labels;
-  final Function(List<String>) onTap;
+  final Function(List<String>) onChanged;
 
   const DefaultTextFieldDialog({
     required this.title,
     required this.labels,
-    required this.onTap,
+    required this.onChanged,
     super.key,
   });
 
@@ -80,8 +81,8 @@ class _DefaultTextFieldDialogState extends State<DefaultTextFieldDialog> {
                   title: '확인',
                   onTap: () {
                     List<String> values = _controllers.map((c) => c.text).toList();
-                    widget.onTap(values);
-                    Navigator.of(context).pop();
+                    widget.onChanged(values);
+                    context.pop();
                   },
                 ),
               ],
