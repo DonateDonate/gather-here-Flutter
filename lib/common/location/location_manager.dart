@@ -1,8 +1,10 @@
 import 'package:geolocator/geolocator.dart';
 
 class LocationManager {
-
-  static final locationSetting = LocationSettings(accuracy: LocationAccuracy.high, distanceFilter: 100);
+  static final locationSetting = LocationSettings(
+    accuracy: LocationAccuracy.high,
+    distanceFilter: 100,
+  );
 
   static Future<Position> getCurrentPosition() async {
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -27,5 +29,8 @@ class LocationManager {
 
     return await Geolocator.getCurrentPosition(locationSettings: locationSetting);
   }
-}
 
+  static Stream<Position?> observePosition() {
+    return Geolocator.getPositionStream(locationSettings: locationSetting);
+  }
+}
