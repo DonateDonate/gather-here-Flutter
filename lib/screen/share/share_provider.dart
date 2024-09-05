@@ -9,7 +9,7 @@ class ShareState {
   double? longitude; // 경도
   double? distance; // 경도
   RoomResponseModel? roomModel;
-  bool? isHost;
+  String? isHost;
 
   ShareState({
     this.latitude,
@@ -42,7 +42,7 @@ class ShareProvider extends StateNotifier<ShareState> {
     );
   }
 
-  void setInitState(bool isHost, RoomResponseModel roomModel) async {
+  void setInitState(String isHost, RoomResponseModel roomModel) async {
     state.isHost = isHost;
     state.roomModel = roomModel;
     final position = await LocationManager.getCurrentPosition();
@@ -56,11 +56,11 @@ class ShareProvider extends StateNotifier<ShareState> {
     final distance = LocationManager.calculateDistance(
       state.latitude!,
       state.longitude!,
-      state.roomModel!.destinationLat!,
-      state.roomModel!.destinationLng!,
+      state.roomModel!.destinationLat,
+      state.roomModel!.destinationLng,
     );
     state.distance = distance;
-    if (state.isHost == true) {
+    if (state.isHost == 'true') {
       deliveryMyInfo(0);
     } else {
       deliveryMyInfo(1);

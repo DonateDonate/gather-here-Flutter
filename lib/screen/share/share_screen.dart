@@ -6,7 +6,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 class ShareScreen extends ConsumerStatefulWidget {
   static get name => 'share';
-  final bool isHost;
+  final String isHost;
   final RoomResponseModel roomModel;
 
   const ShareScreen({

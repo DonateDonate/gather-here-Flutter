@@ -333,6 +333,7 @@ class _LocationBottomSheetState extends ConsumerState<LocationBottomSheet> {
                                           if (result != null) {
                                             context.goNamed(
                                               ShareScreen.name,
+                                              pathParameters: {'isHost' : 'true'},
                                               extra: result,
                                             );
                                           }
