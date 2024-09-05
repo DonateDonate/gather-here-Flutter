@@ -5,18 +5,20 @@ import 'package:gather_here/common/model/socket_model.dart';
 import 'package:gather_here/screen/share/socket_manager.dart';
 
 class ShareState {
-  double? latitude; // 위도
-  double? longitude; // 경도
+  double? myLat; // 위도
+  double? myLong; // 경도
   double? distance; // 경도
   RoomResponseModel? roomModel;
   String? isHost;
+  bool isConnected;
 
   ShareState({
-    this.latitude,
-    this.longitude,
+    this.myLat,
+    this.myLong,
     this.distance,
     this.roomModel,
     this.isHost,
+    this.isConnected = false,
   });
 }
 
@@ -36,9 +38,11 @@ class ShareProvider extends StateNotifier<ShareState> {
   void _setState() {
     state = ShareState(
       isHost: state.isHost,
-      latitude: state.latitude,
-      longitude: state.longitude,
+      myLat: state.myLat,
+      myLong: state.myLong,
       distance: state.distance,
+      roomModel: state.roomModel,
+      isConnected: state.isConnected = false,
     );
   }
 
@@ -46,20 +50,21 @@ class ShareProvider extends StateNotifier<ShareState> {
     state.isHost = isHost;
     state.roomModel = roomModel;
     final position = await LocationManager.getCurrentPosition();
-    state.latitude = position.latitude;
-    state.longitude = position.longitude;
+    state.myLat = position.latitude;
+    state.myLong = position.longitude;
     _setState();
   }
 
   void connectSocket() async {
     await socketManager.connect();
     final distance = LocationManager.calculateDistance(
-      state.latitude!,
-      state.longitude!,
+      state.myLat!,
+      state.myLong!,
       state.roomModel!.destinationLat,
       state.roomModel!.destinationLng,
     );
     state.distance = distance;
+    _setState();
     if (state.isHost == 'true') {
       deliveryMyInfo(0);
     } else {
@@ -71,9 +76,22 @@ class ShareProvider extends StateNotifier<ShareState> {
     socketManager.deliveryMyInfo(
       SocketModel(
           type: type,
-          presentLat: state.latitude!,
-          presentLng: state.longitude!,
+          presentLat: state.myLat!,
+          presentLng: state.myLong!,
           destinationDistance: state.distance!),
     );
+  }
+  
+  void setPosition(double lat, double long) {
+    state.myLat = lat;
+    state.myLong = long;
+    final distance = LocationManager.calculateDistance(
+      state.myLat!,
+      state.myLong!,
+      state.roomModel!.destinationLat,
+      state.roomModel!.destinationLng,
+    );
+    state.distance = distance;
+    _setState();
   }
 }
