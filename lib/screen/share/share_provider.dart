@@ -56,8 +56,8 @@ class ShareProvider extends StateNotifier<ShareState> {
     final distance = LocationManager.calculateDistance(
       state.latitude!,
       state.longitude!,
-      state.roomModel!.destinationLat!,
-      state.roomModel!.destinationLng!,
+      state.roomModel!.destinationLat,
+      state.roomModel!.destinationLng,
     );
     state.distance = distance;
     if (state.isHost == true) {
