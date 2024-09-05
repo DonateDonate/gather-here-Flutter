@@ -169,8 +169,10 @@ class _MapState extends ConsumerState<_Map> {
   // 특정 위치로 카메라 포지션 이동
   void moveToTargetPosition({required double lat, required double lon}) async {
     final GoogleMapController controller = await _controller.future;
-    final targetPosition = CameraPosition(target: LatLng(lat, lon), zoom: 14.4746);
-    await controller.animateCamera(CameraUpdate.newCameraPosition(targetPosition));
+    final targetPosition =
+        CameraPosition(target: LatLng(lat, lon), zoom: 14.4746);
+    await controller
+        .animateCamera(CameraUpdate.newCameraPosition(targetPosition));
   }
 
   @override
@@ -202,6 +204,7 @@ class _MapState extends ConsumerState<_Map> {
 
 // 위치정보 bottom sheet
 class LocationBottomSheet extends ConsumerStatefulWidget {
+
   const LocationBottomSheet({super.key});
 
   @override
@@ -210,7 +213,6 @@ class LocationBottomSheet extends ConsumerStatefulWidget {
 }
 
 class _LocationBottomSheetState extends ConsumerState<LocationBottomSheet> {
-  double _sheetPosition = 0.05; // bottom sheet 시작 높이
   final double _maxPosition = 0.3;
   final double _minPosition = 0.05;
   final double _dragSensitivity = 600;
@@ -218,9 +220,10 @@ class _LocationBottomSheetState extends ConsumerState<LocationBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final vm = ref.watch(homeProvider);
+    final sheetPosition = vm.sheetPosition;
 
     return DraggableScrollableSheet(
-      initialChildSize: _sheetPosition,
+      initialChildSize: sheetPosition,
       minChildSize: _minPosition,
       builder: (context, scrollController) {
         return Container(
@@ -230,14 +233,16 @@ class _LocationBottomSheetState extends ConsumerState<LocationBottomSheet> {
               GestureDetector(
                 onVerticalDragUpdate: (detail) {
                   setState(() {
-                    _sheetPosition -= detail.delta.dy / _dragSensitivity;
+                    double newPosition = sheetPosition - detail.delta.dy / _dragSensitivity;
 
-                    if (_sheetPosition < _minPosition) {
-                      _sheetPosition = _minPosition;
+                    if (newPosition < _minPosition) {
+                      newPosition = _minPosition;
                     }
-                    if (_sheetPosition > _maxPosition) {
-                      _sheetPosition = _maxPosition;
+                    if (newPosition > _maxPosition) {
+                      newPosition = _maxPosition;
                     }
+
+                    ref.read(homeProvider.notifier).setBottomSheetPosition(height: newPosition);
                   });
                 },
                 child: Padding(
@@ -301,9 +306,11 @@ class _LocationBottomSheetState extends ConsumerState<LocationBottomSheet> {
                                       DefaultButton(
                                         title: '위치공유 시작하기',
                                         onTap: () async {
-                                          final result = await ref.read(homeProvider.notifier).tapStartSharingButton();
+                                          final result = await ref
+                                              .read(homeProvider.notifier)
+                                              .tapStartSharingButton();
                                           print(result);
-                                          if(result) {
+                                          if (result) {
                                             context.goNamed(ShareScreen.name);
                                           }
                                         },
