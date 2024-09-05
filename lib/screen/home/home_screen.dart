@@ -146,8 +146,8 @@ class _MapState extends ConsumerState<_Map> {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
 
-  static const CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
+  static const CameraPosition _defaultPosition = CameraPosition(
+    target: LatLng(37.5642135, -127.0016985),
     zoom: 14.4746,
   );
 
@@ -155,7 +155,22 @@ class _MapState extends ConsumerState<_Map> {
   void initState() {
     super.initState();
 
-    ref.read(homeProvider.notifier).getCurrentLocation();
+    // 현재 위치 가져온 후, 그 위치로 이동
+    ref.read(homeProvider.notifier).getCurrentLocation(() async {
+      final vm = ref.read(homeProvider);
+      print('현재위치 ${vm.lat} ${vm.lon}');
+
+      if (vm.lat != null && vm.lon != null) {
+        moveToTargetPosition(lat: vm.lat!, lon: vm.lon!);
+      }
+    });
+  }
+
+  // 특정 위치로 카메라 포지션 이동
+  void moveToTargetPosition({required double lat, required double lon}) async {
+    final GoogleMapController controller = await _controller.future;
+    final targetPosition = CameraPosition(target: LatLng(lat, lon), zoom: 14.4746);
+    await controller.animateCamera(CameraUpdate.newCameraPosition(targetPosition));
   }
 
   @override
@@ -163,9 +178,9 @@ class _MapState extends ConsumerState<_Map> {
     final vm = ref.watch(homeProvider);
 
     return GoogleMap(
-      initialCameraPosition: _kGooglePlex,
+      initialCameraPosition: _defaultPosition,
       myLocationEnabled: true,
-      myLocationButtonEnabled: true,
+      myLocationButtonEnabled: false,
       markers: vm.results
           .map(
             (result) => Marker(

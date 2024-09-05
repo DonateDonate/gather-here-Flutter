@@ -135,11 +135,12 @@ class HomeProvider extends StateNotifier<HomeState> {
     }
   }
 
-  void getCurrentLocation() async {
+  void getCurrentLocation(VoidCallback completion) async {
     final position = await LocationManager.getCurrentPosition();
     state.lat = position.latitude;
     state.lon = position.longitude;
     _setState();
+    completion();
   }
 
   void tapSearchResult({required SearchDocumentsModel model}) {
