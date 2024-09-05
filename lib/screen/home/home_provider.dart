@@ -5,6 +5,7 @@ import 'package:gather_here/common/location/location_manager.dart';
 import 'package:gather_here/common/model/response/member_info_model.dart';
 import 'package:gather_here/common/model/room_create_model.dart';
 import 'package:gather_here/common/model/room_join_model.dart';
+import 'package:gather_here/common/model/room_response_model.dart';
 import 'package:gather_here/common/model/search_response_model.dart';
 import 'package:gather_here/common/repository/map_repository.dart';
 import 'package:gather_here/common/repository/member_repository.dart';
@@ -104,7 +105,7 @@ class HomeProvider extends StateNotifier<HomeState> {
     }
   }
 
-  Future<bool> tapStartSharingButton() async {
+  Future<RoomResponseModel?> tapStartSharingButton() async {
     state.targetDate = DateTime(2024, 08, 30);
     state.targetTime = TimeOfDay(hour: 21, minute: 0);
 
@@ -122,13 +123,13 @@ class HomeProvider extends StateNotifier<HomeState> {
           ),
         );
         print(result.toString());
-        return true;
+        return result;
       } catch(err) {
         print(err.toString());
       }
     }
 
-    return false;
+    return null;
   }
 
   void queryChanged({required String value}) async {

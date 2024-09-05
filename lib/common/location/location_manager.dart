@@ -27,10 +27,25 @@ class LocationManager {
       return Future.error('위치권한 요청이 영원히 거부됨');
     }
 
-    return await Geolocator.getCurrentPosition(locationSettings: locationSetting);
+    return await Geolocator.getCurrentPosition(
+        locationSettings: locationSetting);
   }
 
   static Stream<Position?> observePosition() {
     return Geolocator.getPositionStream(locationSettings: locationSetting);
+  }
+
+  static double calculateDistance(
+    double myLatitude,
+    double myLongitude,
+    double targetLatitude,
+    double targetLongitude,
+  ) {
+    return Geolocator.distanceBetween(
+      myLatitude,
+      myLongitude,
+      targetLatitude,
+      targetLongitude,
+    );
   }
 }

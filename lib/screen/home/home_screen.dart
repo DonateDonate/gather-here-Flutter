@@ -1,20 +1,18 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
 
+import 'package:easy_debounce/easy_debounce.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gather_here/common/components/default_button.dart';
+import 'package:gather_here/common/components/default_layout.dart';
 import 'package:gather_here/common/components/default_text_form_field.dart';
 import 'package:gather_here/common/const/colors.dart';
 import 'package:gather_here/common/location/location_manager.dart';
-import 'package:gather_here/common/storage/storage.dart';
+import 'package:gather_here/screen/home/home_provider.dart';
 import 'package:gather_here/screen/my_page/my_page_screen.dart';
 import 'package:gather_here/screen/share/share_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:easy_debounce/easy_debounce.dart';
-
-import 'package:gather_here/screen/home/home_provider.dart';
-import 'package:gather_here/common/components/default_layout.dart';
-import 'package:gather_here/common/components/default_button.dart';
 
 class HomeScreen extends ConsumerWidget {
   static get name => 'home';
@@ -44,10 +42,9 @@ class HomeScreen extends ConsumerWidget {
                             title: Text('참여코드를 입력해주세요'),
                             content: DefaultTextFormField(
                               label: '4자리 코드를 입력해주세요',
-                              onChanged: (text) =>
-                                  ref
-                                      .read(homeProvider.notifier)
-                                      .inviteCodeChanged(value: text),
+                              onChanged: (text) => ref
+                                  .read(homeProvider.notifier)
+                                  .inviteCodeChanged(value: text),
                             ),
                             actions: [
                               DefaultButton(
@@ -124,29 +121,29 @@ class _SearchBarState extends ConsumerState<_SearchBar> {
           },
           icon: state.infoModel?.profileImageUrl != null
               ? ClipOval(
-              child: Image.network(
-                state.infoModel!.profileImageUrl!,
-                width: 40,
-                height: 40,
-                fit: BoxFit.cover,
-              ))
+                  child: Image.network(
+                  state.infoModel!.profileImageUrl!,
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.cover,
+                ))
               : const Icon(
-            Icons.account_circle,
-            size: 40,
-          ),
+                  Icons.account_circle,
+                  size: 40,
+                ),
         )
       ],
-      onChanged: (text) =>
-          EasyDebounce.debounce(
-            'query',
-            Duration(seconds: 1),
-                () async {
-              ref.read(homeProvider.notifier).queryChanged(value: text);
-            },
-          ),
+      onChanged: (text) => EasyDebounce.debounce(
+        'query',
+        Duration(seconds: 1),
+        () async {
+          ref.read(homeProvider.notifier).queryChanged(value: text);
+        },
+      ),
     );
   }
 }
+
 // Maps
 class _Map extends ConsumerStatefulWidget {
   const _Map({super.key});
@@ -157,7 +154,7 @@ class _Map extends ConsumerStatefulWidget {
 
 class _MapState extends ConsumerState<_Map> {
   final Completer<GoogleMapController> _controller =
-  Completer<GoogleMapController>();
+      Completer<GoogleMapController>();
 
   static const CameraPosition _defaultPosition = CameraPosition(
     target: LatLng(37.5642135, -127.0016985),
@@ -207,15 +204,14 @@ class _MapState extends ConsumerState<_Map> {
       myLocationButtonEnabled: false,
       markers: vm.results
           .map(
-            (result) =>
-            Marker(
+            (result) => Marker(
               markerId: MarkerId('${result.hashCode}'),
               position: LatLng(double.parse(result.y), double.parse(result.x)),
               onTap: () {
                 ref.read(homeProvider.notifier).tapLocationMarker(result);
               },
             ),
-      )
+          )
           .toSet(),
       onMapCreated: (controller) {
         _controller.complete(controller);
@@ -306,10 +302,7 @@ class _LocationBottomSheetState extends ConsumerState<LocationBottomSheet> {
                                 builder: (context) {
                                   return AlertDialog(
                                     title: Text(
-                                        '${MediaQuery
-                                            .of(context)
-                                            .size
-                                            .height}'),
+                                        '${MediaQuery.of(context).size.height}'),
                                     content: Container(
                                       height: 100,
                                       child: Column(
@@ -337,8 +330,11 @@ class _LocationBottomSheetState extends ConsumerState<LocationBottomSheet> {
                                               .read(homeProvider.notifier)
                                               .tapStartSharingButton();
                                           print(result);
-                                          if (result) {
-                                            context.goNamed(ShareScreen.name);
+                                          if (result != null) {
+                                            context.goNamed(
+                                              ShareScreen.name,
+                                              extra: result,
+                                            );
                                           }
                                         },
                                       )

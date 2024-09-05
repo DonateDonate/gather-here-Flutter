@@ -1,3 +1,4 @@
+import 'package:gather_here/common/model/room_response_model.dart';
 import 'package:gather_here/screen/my_page/my_page_screen.dart';
 import 'package:gather_here/screen/share/share_screen.dart';
 import 'package:gather_here/screen/sign_up/sign_up_screen.dart';
@@ -36,9 +37,13 @@ final router = GoRouter(
       builder: (context, state) => HomeScreen(),
       routes: [
         GoRoute(
-          path: 'share',
+          path: 'share/:isHost',
           name: ShareScreen.name,
-          builder: (context, state) => ShareScreen(),
+          builder: (context, state) {
+            final isHost = state.pathParameters['isHost'] ?? true;
+            final dataModel = state.extra as RoomResponseModel;
+            return ShareScreen(isHost: isHost);
+          },
         ),
       ]
     ),

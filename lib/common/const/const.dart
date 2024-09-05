@@ -3,4 +3,5 @@ class Const {
   Const._();
 
   static const baseUrl = 'http://ec2-3-34-255-150.ap-northeast-2.compute.amazonaws.com:8080';
+  static const socketUrl = 'ws://ec2-3-34-255-150.ap-northeast-2.compute.amazonaws.com:8080/location/share';
 }
