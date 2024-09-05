@@ -41,8 +41,8 @@ final router = GoRouter(
           name: ShareScreen.name,
           builder: (context, state) {
             final isHost = state.pathParameters['isHost'] ?? true;
-            final dataModel = state.extra as RoomResponseModel;
-            return ShareScreen(isHost: isHost);
+            final roomModel = state.extra as RoomResponseModel;
+            return ShareScreen(isHost: isHost, roomModel: roomModel,);
           },
         ),
       ]
