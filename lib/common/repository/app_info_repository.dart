@@ -4,7 +4,7 @@ import 'package:gather_here/common/dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
 
 import 'package:gather_here/common/const/const.dart';
-import 'package:gather_here/common/model/app_info_model.dart';
+import 'package:gather_here/common/model/response/app_info_model.dart';
 
 part 'app_info_repository.g.dart';
 

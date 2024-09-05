@@ -91,11 +91,13 @@ class CustomInterceptor extends Interceptor {
     final refreshToken = response.headers.value('refresh-token');
     if (refreshToken != null) {
       storage.write(key: StorageKey.refreshToken.name, value: refreshToken);
+      print('refreshToken 저장');
     }
 
     final accessToken = response.headers.value('authorization');
     if (accessToken != null) {
       storage.write(key: StorageKey.accessToken.name, value: accessToken);
+      print('accessToken 저장');
     }
 
     super.onResponse(response, handler);

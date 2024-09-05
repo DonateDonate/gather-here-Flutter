@@ -87,7 +87,7 @@ class _MemberRepository implements MemberRepository {
     )
         .compose(
           _dio.options,
-          'nickname',
+          '/nickname',
           queryParameters: queryParameters,
           data: _data,
         )

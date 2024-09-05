@@ -43,7 +43,7 @@ abstract class MemberRepository {
     @Body() required PasswordModel body,
   });
 
-  @PATCH('nickname')
+  @PATCH('/nickname')
   @Headers({
     'accessToken': 'true',
   })

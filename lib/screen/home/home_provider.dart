@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:gather_here/common/location/location_manager.dart';
+import 'package:gather_here/common/model/response/member_info_model.dart';
 import 'package:gather_here/common/model/room_create_model.dart';
 import 'package:gather_here/common/model/room_join_model.dart';
 import 'package:gather_here/common/model/search_response_model.dart';
-
 import 'package:gather_here/common/repository/map_repository.dart';
+import 'package:gather_here/common/repository/member_repository.dart';
 import 'package:gather_here/common/repository/room_repository.dart';
 
 class HomeState {
@@ -21,6 +22,8 @@ class HomeState {
   DateTime? targetDate;
   TimeOfDay? targetTime;
 
+  MemberInfoModel? infoModel;
+
   HomeState({
     this.query,
     this.lat,
@@ -31,6 +34,7 @@ class HomeState {
     this.targetDate,
     this.targetTime,
     this.sheetPosition = 0.05,
+    this.infoModel,
   });
 }
 
@@ -38,17 +42,21 @@ final homeProvider =
     AutoDisposeStateNotifierProvider<HomeProvider, HomeState>((ref) {
   final mapRepo = ref.watch(mapRepositoryProvider);
   final roomRepo = ref.watch(roomRepositoryProvider);
-  return HomeProvider(mapRepo: mapRepo, roomRepo: roomRepo);
+  final memberRepo = ref.watch(memberRepositoryProvider);
+  return HomeProvider(mapRepo: mapRepo, memberRepo: memberRepo, roomRepo: roomRepo);
 });
 
 class HomeProvider extends StateNotifier<HomeState> {
   final RoomRepository roomRepo;
   final MapRepository mapRepo;
+  final MemberRepository memberRepo;
 
   HomeProvider({
     required this.roomRepo,
     required this.mapRepo,
-  }) : super(HomeState());
+    required this.memberRepo,
+  }) : super(HomeState()){
+  }
 
   void _setState() {
     state = HomeState(
@@ -61,6 +69,7 @@ class HomeProvider extends StateNotifier<HomeState> {
       targetDate: state.targetDate,
       targetTime: state.targetTime,
       sheetPosition: state.sheetPosition,
+      infoModel: state.infoModel,
     );
   }
 
@@ -81,6 +90,17 @@ class HomeProvider extends StateNotifier<HomeState> {
     } catch (err) {
       print('${err.toString()}');
       return false;
+    }
+  }
+
+
+  void getMyInfo() async {
+    try {
+      final memberInfo = await memberRepo.getMemberInfo();
+      state.infoModel = memberInfo;
+      _setState();
+    } catch (err) {
+      debugPrint('getMyInfo: $err');
     }
   }
 

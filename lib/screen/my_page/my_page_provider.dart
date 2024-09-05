@@ -43,10 +43,10 @@ class MyPageProvider extends StateNotifier<AsyncValue<MemberInfoModel>> {
     required this.storage,
   }) : super(const AsyncValue.loading()) {
     // 초기 상태를 로딩 상태로 설정
-    getMemberInfo();
+    getMyInfo();
   }
 
-  Future<void> getMemberInfo() async {
+  Future<void> getMyInfo() async {
     try {
       final memberInfo = await memberRepository.getMemberInfo();
       state = AsyncValue.data(memberInfo);
@@ -100,7 +100,7 @@ class MyPageProvider extends StateNotifier<AsyncValue<MemberInfoModel>> {
     try {
       await memberRepository.patchChangeNickName(
           body: NicknameModel(nickname: nickName));
-      getMemberInfo();
+      getMyInfo;
       return true;
     } catch (e) {
       debugPrint('changeNickName Err: $e');

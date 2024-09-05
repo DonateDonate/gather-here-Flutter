@@ -39,9 +39,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   void _checkLoginState() async {
     await Future.delayed(Duration(seconds: 2));
 
-    final result = await ref.read(splashProvier.notifier).getAppInfo();
+    final getAppInfoResult = await ref.read(splashProvier.notifier).getAppInfo();
 
-    if (result) {
+    if (getAppInfoResult) {
+
       context.goNamed(HomeScreen.name);
     } else {
       context.goNamed(LoginScreen.name);
