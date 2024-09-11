@@ -119,7 +119,7 @@ class HomeProvider extends StateNotifier<HomeState> {
             destinationLat: double.parse(state.selectedResult!.y),
             destinationLng: double.parse(state.selectedResult!.x),
             destinationName: state.selectedResult?.place_name ?? "",
-            encounterDate: "2024-08-29 22:00",
+            encounterDate: "2024-09-11 23:00",
           ),
         );
         print(result.toString());

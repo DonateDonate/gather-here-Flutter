@@ -165,7 +165,6 @@ class _MapState extends ConsumerState<_Map> {
   void initState() {
     super.initState();
 
-    print('what is wrong');
     // 현재 위치 가져온 후, 그 위치로 이동
     ref.read(homeProvider.notifier).getCurrentLocation(() async {
       final vm = ref.read(homeProvider);
@@ -174,14 +173,6 @@ class _MapState extends ConsumerState<_Map> {
       if (vm.lat != null && vm.lon != null) {
         moveToTargetPosition(lat: vm.lat!, lon: vm.lon!);
       }
-    });
-
-    final stream = LocationManager.observePosition().listen((position) {
-      print(
-        position == null
-            ? 'Unknown'
-            : 'location ${position.latitude.toString()}, ${position.longitude.toString()}',
-      );
     });
   }
 
@@ -198,24 +189,46 @@ class _MapState extends ConsumerState<_Map> {
   Widget build(BuildContext context) {
     final vm = ref.watch(homeProvider);
 
-    return GoogleMap(
-      initialCameraPosition: _defaultPosition,
-      myLocationEnabled: true,
-      myLocationButtonEnabled: false,
-      markers: vm.results
-          .map(
-            (result) => Marker(
-              markerId: MarkerId('${result.hashCode}'),
-              position: LatLng(double.parse(result.y), double.parse(result.x)),
-              onTap: () {
-                ref.read(homeProvider.notifier).tapLocationMarker(result);
-              },
-            ),
-          )
-          .toSet(),
-      onMapCreated: (controller) {
-        _controller.complete(controller);
-      },
+    return Stack(
+      children: [
+        GoogleMap(
+          initialCameraPosition: _defaultPosition,
+          myLocationEnabled: true,
+          myLocationButtonEnabled: false,
+          markers: vm.results
+              .map(
+                (result) => Marker(
+                  markerId: MarkerId('${result.hashCode}'),
+                  position:
+                      LatLng(double.parse(result.y), double.parse(result.x)),
+                  onTap: () {
+                    ref.read(homeProvider.notifier).tapLocationMarker(result);
+                  },
+                ),
+              )
+              .toSet(),
+          onMapCreated: (controller) {
+            _controller.complete(controller);
+          },
+        ),
+        Positioned(
+          bottom: 100,
+          left: 10,
+          child: IconButton(
+            onPressed: () {
+              ref.read(homeProvider.notifier).getCurrentLocation(() async {
+                final vm = ref.read(homeProvider);
+                print('현재위치 ${vm.lat} ${vm.lon}');
+
+                if (vm.lat != null && vm.lon != null) {
+                  moveToTargetPosition(lat: vm.lat!, lon: vm.lon!);
+                }
+              });
+            },
+            icon: Icon(Icons.my_location),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -333,7 +346,9 @@ class _LocationBottomSheetState extends ConsumerState<LocationBottomSheet> {
                                           if (result != null) {
                                             context.goNamed(
                                               ShareScreen.name,
-                                              pathParameters: {'isHost' : 'true'},
+                                              pathParameters: {
+                                                'isHost': 'true'
+                                              },
                                               extra: result,
                                             );
                                           }
