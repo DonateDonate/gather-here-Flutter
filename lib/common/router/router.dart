@@ -1,4 +1,4 @@
-import 'package:gather_here/common/model/room_response_model.dart';
+import 'package:gather_here/common/model/response/room_response_model.dart';
 import 'package:gather_here/screen/my_page/my_page_screen.dart';
 import 'package:gather_here/screen/share/share_screen.dart';
 import 'package:gather_here/screen/sign_up/sign_up_screen.dart';

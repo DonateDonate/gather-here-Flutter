@@ -35,11 +35,9 @@ class SocketManager {
     await _channel.ready;
 
     print('connect?');
-
-
   }
 
-  void close() async {
+  void close() {
     _channel.sink.close(1000);
   }
 

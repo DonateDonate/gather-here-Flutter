@@ -2,6 +2,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'room_join_model.g.dart';
 
+// POST: room/join Request Body
 @JsonSerializable()
 class RoomJoinModel {
   final String shareCode; // 공유코드 4자리

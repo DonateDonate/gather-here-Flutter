@@ -2,6 +2,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'room_response_model.g.dart';
 
+// Post /rooms && /rooms/join response Body
 @JsonSerializable()
 class RoomResponseModel {
   final int roomSeq; // 방 번호

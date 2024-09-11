@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gather_here/common/dio/dio_kakao.dart';
-import 'package:gather_here/common/model/search_response_model.dart';
+import 'package:gather_here/common/model/response/search_response_model.dart';
 import 'package:retrofit/http.dart';
 import 'package:dio/dio.dart';
 

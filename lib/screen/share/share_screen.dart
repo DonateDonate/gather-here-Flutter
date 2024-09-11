@@ -2,11 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gather_here/common/location/location_manager.dart';
-import 'package:gather_here/common/model/room_response_model.dart';
+import 'package:gather_here/common/model/response/room_response_model.dart';
 import 'package:gather_here/screen/share/share_provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 class ShareScreen extends ConsumerStatefulWidget {
   static get name => 'share';
@@ -24,29 +23,70 @@ class ShareScreen extends ConsumerStatefulWidget {
 }
 
 class _ShareScreenState extends ConsumerState<ShareScreen> {
-  late final WebSocketChannel _channel;
 
   @override
   void initState() {
     super.initState();
-
-    ref
-        .read(shareProvider.notifier)
-        .setInitState(widget.isHost, widget.roomModel);
-    ref.read(shareProvider.notifier).connectSocket();
+    _setup();
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-
-    _channel.sink.close();
+  void _setup() async {
+    await ref.read(shareProvider.notifier).setInitState(widget.isHost, widget.roomModel);
+    await ref.read(shareProvider.notifier).connectSocket();
+    ref.read(shareProvider.notifier).observeMyLocation();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(),
+      body: Stack(
+        children: [
+          _Map(),
+          SafeArea(
+              child: Container(
+            color: Colors.red,
+            width: double.infinity,
+            height: 50,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Text('09:00 남음'),
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                ),
+                Positioned(
+                  right: 16, // 오른쪽 끝에서 약간의 여백을 줌
+                  child: IconButton(
+                    onPressed: () {
+                      ref.read(shareProvider.notifier).disconnectSocket();
+                      context.pop();
+                    },
+                    icon: Container(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Icon(
+                          Icons.exit_to_app,
+                          size: 24,
+                        ),
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ))
+        ],
+      ),
     );
   }
 }
@@ -59,49 +99,55 @@ class _Map extends ConsumerStatefulWidget {
 }
 
 class _MapState extends ConsumerState<_Map> {
-  final Completer<GoogleMapController> _controller =
-      Completer<GoogleMapController>();
+  final Completer<GoogleMapController> _controller = Completer<GoogleMapController>();
 
   static const CameraPosition _defaultPosition = CameraPosition(
     target: LatLng(37.5642135, -127.0016985),
     zoom: 14.4746,
   );
 
-  @override
-  void initState() {
-    super.initState();
-
-    LocationManager.observePosition().listen((position) {
-      print(position.toString());
-      if (position != null) {
-        ref.read(shareProvider.notifier).setPosition(
-              position.latitude,
-              position.longitude,
-            );
-        ref.read(shareProvider.notifier).deliveryMyInfo(2);
-      }
-    });
+  // 특정 위치로 카메라 포지션 이동
+  void moveToTargetPosition({required double lat, required double lon}) async {
+    final GoogleMapController controller = await _controller.future;
+    final targetPosition = CameraPosition(target: LatLng(lat, lon), zoom: 14.4746);
+    await controller.animateCamera(CameraUpdate.newCameraPosition(targetPosition));
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(shareProvider);
-    return GoogleMap(
-      initialCameraPosition: _defaultPosition,
-      myLocationEnabled: true,
-      myLocationButtonEnabled: false,
-      onMapCreated: (controller) {
-        _controller.complete(controller);
-      },
-      markers: {
-        Marker(
-          markerId: MarkerId('김종민'),
-          position: LatLng(
-            state.myLat ?? 37.5642135,
-            state.myLong ?? -127.0016985,
+    final vm = ref.watch(shareProvider);
+    return Stack(
+      children: [
+        GoogleMap(
+          initialCameraPosition: _defaultPosition,
+          myLocationEnabled: true,
+          myLocationButtonEnabled: false,
+          onMapCreated: (controller) {
+            _controller.complete(controller);
+          },
+          markers: vm.members
+              .map(
+                (result) => Marker(
+              markerId: MarkerId('${result.hashCode}'),
+              position:
+              LatLng(result.presentLat, result.presentLng),
+            ),
+          )
+              .toSet(),
+        ),
+        Positioned(
+          bottom: 20,
+          left: 20,
+          child: IconButton(
+            onPressed: () {
+              if (vm.myLat != null && vm.myLong != null) {
+                moveToTargetPosition(lat: vm.myLat!, lon: vm.myLong!);
+              }
+            },
+            icon: Icon(Icons.my_location),
           ),
         )
-      },
+      ],
     );
   }
 }

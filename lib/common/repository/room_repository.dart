@@ -1,12 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart' hide Headers;
-import 'package:gather_here/common/model/room_create_model.dart';
+import 'package:gather_here/common/model/request/room_create_model.dart';
+import 'package:gather_here/common/model/request/room_exit_model.dart';
 import 'package:retrofit/http.dart';
 
 import 'package:gather_here/common/const/const.dart';
 import 'package:gather_here/common/dio/dio.dart';
-import 'package:gather_here/common/model/room_join_model.dart';
-import 'package:gather_here/common/model/room_response_model.dart';
+import 'package:gather_here/common/model/request/room_join_model.dart';
+import 'package:gather_here/common/model/response/room_response_model.dart';
 
 part 'room_repository.g.dart';
 
@@ -34,5 +35,13 @@ abstract class RoomRepository {
   @POST('')
   Future<RoomResponseModel> postCreateRoom({
     @Body() required RoomCreateModel body,
+  });
+
+  @Headers({
+    'accessToken': 'true',
+  })
+  @POST('/exit')
+  Future<void> postExitRoom({
+    @Body() required RoomExitModel body,
   });
 }

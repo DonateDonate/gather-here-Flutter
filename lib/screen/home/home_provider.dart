@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:gather_here/common/location/location_manager.dart';
 import 'package:gather_here/common/model/response/member_info_model.dart';
-import 'package:gather_here/common/model/room_create_model.dart';
-import 'package:gather_here/common/model/room_join_model.dart';
-import 'package:gather_here/common/model/room_response_model.dart';
-import 'package:gather_here/common/model/search_response_model.dart';
+import 'package:gather_here/common/model/request/room_create_model.dart';
+import 'package:gather_here/common/model/request/room_join_model.dart';
+import 'package:gather_here/common/model/response/room_response_model.dart';
+import 'package:gather_here/common/model/response/search_response_model.dart';
 import 'package:gather_here/common/repository/map_repository.dart';
 import 'package:gather_here/common/repository/member_repository.dart';
 import 'package:gather_here/common/repository/room_repository.dart';
@@ -150,7 +150,6 @@ class HomeProvider extends StateNotifier<HomeState> {
           query: state.query!, x: state.lon!, y: state.lat!);
       state.results = result.documents ?? [];
       _setState();
-      print('result: ${state.results.length}');
     }
   }
 

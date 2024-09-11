@@ -21,6 +21,8 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final vm = ref.watch(homeProvider);
+
     return DefaultLayout(
       child: Stack(
         children: [
@@ -71,7 +73,68 @@ class HomeScreen extends ConsumerWidget {
               ),
             ),
           ),
-          LocationBottomSheet(),
+          LocationBottomSheet(
+            content: [
+              Text(
+                '${vm.selectedResult?.place_name}',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+              ),
+              Text('${vm.selectedResult?.road_address_name}'),
+              Text('현위치로부터 ${vm.selectedResult?.distance}m'),
+              const SizedBox(height: 20),
+              DefaultButton(
+                title: '목적지로 설정',
+                height: 40,
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text('${MediaQuery.of(context).size.height}'),
+                        content: Container(
+                          height: 100,
+                          child: Column(
+                            children: [
+                              GestureDetector(
+                                onTap: () async {
+// TODO: DatePicker
+                                },
+                                child: Text('날짜: ${vm.targetDate}'),
+                              ),
+                              GestureDetector(
+                                onTap: () async {
+// TODO: TimePicker
+                                },
+                                child: Text('시간: ${vm.targetTime}'),
+                              )
+                            ],
+                          ),
+                        ),
+                        actions: [
+                          DefaultButton(
+                            title: '위치공유 시작하기',
+                            onTap: () async {
+                              final result = await ref
+                                  .read(homeProvider.notifier)
+                                  .tapStartSharingButton();
+                              print(result);
+                              if (result != null) {
+                                context.goNamed(
+                                  ShareScreen.name,
+                                  pathParameters: {'isHost': 'true'},
+                                  extra: result,
+                                );
+                              }
+                            },
+                          )
+                        ],
+                      );
+                    },
+                  );
+                },
+              )
+            ],
+          ),
         ],
       ),
     );
@@ -166,9 +229,8 @@ class _MapState extends ConsumerState<_Map> {
     super.initState();
 
     // 현재 위치 가져온 후, 그 위치로 이동
-    ref.read(homeProvider.notifier).getCurrentLocation(() async {
+    ref.read(homeProvider.notifier).getCurrentLocation(() {
       final vm = ref.read(homeProvider);
-      print('현재위치 ${vm.lat} ${vm.lon}');
 
       if (vm.lat != null && vm.lon != null) {
         moveToTargetPosition(lat: vm.lat!, lon: vm.lon!);
@@ -235,7 +297,9 @@ class _MapState extends ConsumerState<_Map> {
 
 // 위치정보 bottom sheet
 class LocationBottomSheet extends ConsumerStatefulWidget {
-  const LocationBottomSheet({super.key});
+  final List<Widget> content;
+
+  const LocationBottomSheet({required this.content, super.key});
 
   @override
   ConsumerState<LocationBottomSheet> createState() =>
@@ -297,70 +361,7 @@ class _LocationBottomSheetState extends ConsumerState<LocationBottomSheet> {
                       padding: const EdgeInsets.all(20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${vm.selectedResult?.place_name}',
-                            style: TextStyle(
-                                fontSize: 24, fontWeight: FontWeight.w700),
-                          ),
-                          Text('${vm.selectedResult?.road_address_name}'),
-                          Text('현위치로부터 ${vm.selectedResult?.distance}m'),
-                          const SizedBox(height: 20),
-                          DefaultButton(
-                            title: '목적지로 설정',
-                            height: 40,
-                            onTap: () {
-                              showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return AlertDialog(
-                                    title: Text(
-                                        '${MediaQuery.of(context).size.height}'),
-                                    content: Container(
-                                      height: 100,
-                                      child: Column(
-                                        children: [
-                                          GestureDetector(
-                                            onTap: () async {
-// TODO: DatePicker
-                                            },
-                                            child: Text('날짜: ${vm.targetDate}'),
-                                          ),
-                                          GestureDetector(
-                                            onTap: () async {
-// TODO: TimePicker
-                                            },
-                                            child: Text('시간: ${vm.targetTime}'),
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                    actions: [
-                                      DefaultButton(
-                                        title: '위치공유 시작하기',
-                                        onTap: () async {
-                                          final result = await ref
-                                              .read(homeProvider.notifier)
-                                              .tapStartSharingButton();
-                                          print(result);
-                                          if (result != null) {
-                                            context.goNamed(
-                                              ShareScreen.name,
-                                              pathParameters: {
-                                                'isHost': 'true'
-                                              },
-                                              extra: result,
-                                            );
-                                          }
-                                        },
-                                      )
-                                    ],
-                                  );
-                                },
-                              );
-                            },
-                          )
-                        ],
+                        children: widget.content,
                       ),
                     ),
                   ),
