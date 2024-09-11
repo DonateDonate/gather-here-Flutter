@@ -55,9 +55,12 @@ class HomeScreen extends ConsumerWidget {
                                   final result = await ref
                                       .read(homeProvider.notifier)
                                       .tapInviteButton();
-                                  if (result) {
-                                    context.pop();
-                                    context.goNamed(ShareScreen.name);
+                                  if (result != null) {
+                                    context.goNamed(
+                                      ShareScreen.name,
+                                      pathParameters: {'isHost': 'false'},
+                                      extra: result,
+                                    );
                                   } else {
                                     print('Error: 방입장 실패');
                                   }

@@ -79,21 +79,20 @@ class HomeProvider extends StateNotifier<HomeState> {
     _setState();
   }
 
-  Future<bool> tapInviteButton() async {
+  Future<RoomResponseModel?> tapInviteButton() async {
     if (state.inviteCode?.length != 4) {
-      return false;
+      return null;
     }
 
     try {
       final result = await roomRepo.postJoinRoom(
           body: RoomJoinModel(shareCode: state.inviteCode!));
-      return true;
+      return result;
     } catch (err) {
       print('${err.toString()}');
-      return false;
+      return null;
     }
   }
-
 
   void getMyInfo() async {
     try {
