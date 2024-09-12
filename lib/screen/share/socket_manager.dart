@@ -32,13 +32,15 @@ class SocketManager {
       headers: {'Authorization': '$token'},
     );
 
+    print('protocol ${_channel.protocol}');
+
     await _channel.ready;
 
     print('connect?');
   }
 
-  void close() {
-    _channel.sink.close(1000);
+  Future<void> close() async {
+    await _channel.sink.close(1000);
   }
 
   Stream<dynamic> observeConnection() {

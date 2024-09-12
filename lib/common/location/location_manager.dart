@@ -1,10 +1,7 @@
 import 'package:geolocator/geolocator.dart';
 
 class LocationManager {
-  static final locationSetting = LocationSettings(
-    accuracy: LocationAccuracy.high,
-    distanceFilter: 100,
-  );
+  static final locationSetting = LocationSettings(distanceFilter: 5);
 
   static Future<Position> getCurrentPosition() async {
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();

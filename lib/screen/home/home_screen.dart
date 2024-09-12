@@ -7,7 +7,7 @@ import 'package:gather_here/common/components/default_button.dart';
 import 'package:gather_here/common/components/default_layout.dart';
 import 'package:gather_here/common/components/default_text_form_field.dart';
 import 'package:gather_here/common/const/colors.dart';
-import 'package:gather_here/common/location/location_manager.dart';
+import 'package:gather_here/screen/debug/debug_screen.dart';
 import 'package:gather_here/screen/home/home_provider.dart';
 import 'package:gather_here/screen/my_page/my_page_screen.dart';
 import 'package:gather_here/screen/share/share_screen.dart';
@@ -24,6 +24,14 @@ class HomeScreen extends ConsumerWidget {
     final vm = ref.watch(homeProvider);
 
     return DefaultLayout(
+      trailing: [
+        IconButton(
+          onPressed: () {
+            context.goNamed(DebugScreen.name);
+          },
+          icon: Icon(Icons.add),
+        ),
+      ],
       child: Stack(
         children: [
           _Map(),
@@ -44,17 +52,13 @@ class HomeScreen extends ConsumerWidget {
                             title: Text('참여코드를 입력해주세요'),
                             content: DefaultTextFormField(
                               label: '4자리 코드를 입력해주세요',
-                              onChanged: (text) => ref
-                                  .read(homeProvider.notifier)
-                                  .inviteCodeChanged(value: text),
+                              onChanged: (text) => ref.read(homeProvider.notifier).inviteCodeChanged(value: text),
                             ),
                             actions: [
                               DefaultButton(
                                 title: '확인',
                                 onTap: () async {
-                                  final result = await ref
-                                      .read(homeProvider.notifier)
-                                      .tapInviteButton();
+                                  final result = await ref.read(homeProvider.notifier).tapInviteButton();
                                   if (result != null) {
                                     context.goNamed(
                                       ShareScreen.name,
@@ -117,9 +121,7 @@ class HomeScreen extends ConsumerWidget {
                           DefaultButton(
                             title: '위치공유 시작하기',
                             onTap: () async {
-                              final result = await ref
-                                  .read(homeProvider.notifier)
-                                  .tapStartSharingButton();
+                              final result = await ref.read(homeProvider.notifier).tapStartSharingButton();
                               print(result);
                               if (result != null) {
                                 context.goNamed(
@@ -219,8 +221,7 @@ class _Map extends ConsumerStatefulWidget {
 }
 
 class _MapState extends ConsumerState<_Map> {
-  final Completer<GoogleMapController> _controller =
-      Completer<GoogleMapController>();
+  final Completer<GoogleMapController> _controller = Completer<GoogleMapController>();
 
   static const CameraPosition _defaultPosition = CameraPosition(
     target: LatLng(37.5642135, -127.0016985),
@@ -244,10 +245,8 @@ class _MapState extends ConsumerState<_Map> {
   // 특정 위치로 카메라 포지션 이동
   void moveToTargetPosition({required double lat, required double lon}) async {
     final GoogleMapController controller = await _controller.future;
-    final targetPosition =
-        CameraPosition(target: LatLng(lat, lon), zoom: 14.4746);
-    await controller
-        .animateCamera(CameraUpdate.newCameraPosition(targetPosition));
+    final targetPosition = CameraPosition(target: LatLng(lat, lon), zoom: 14.4746);
+    await controller.animateCamera(CameraUpdate.newCameraPosition(targetPosition));
   }
 
   @override
@@ -264,8 +263,7 @@ class _MapState extends ConsumerState<_Map> {
               .map(
                 (result) => Marker(
                   markerId: MarkerId('${result.hashCode}'),
-                  position:
-                      LatLng(double.parse(result.y), double.parse(result.x)),
+                  position: LatLng(double.parse(result.y), double.parse(result.x)),
                   onTap: () {
                     ref.read(homeProvider.notifier).tapLocationMarker(result);
                   },
@@ -305,8 +303,7 @@ class LocationBottomSheet extends ConsumerStatefulWidget {
   const LocationBottomSheet({required this.content, super.key});
 
   @override
-  ConsumerState<LocationBottomSheet> createState() =>
-      _LocationBottomSheetState();
+  ConsumerState<LocationBottomSheet> createState() => _LocationBottomSheetState();
 }
 
 class _LocationBottomSheetState extends ConsumerState<LocationBottomSheet> {
@@ -330,8 +327,7 @@ class _LocationBottomSheetState extends ConsumerState<LocationBottomSheet> {
               GestureDetector(
                 onVerticalDragUpdate: (detail) {
                   setState(() {
-                    double newPosition =
-                        sheetPosition - detail.delta.dy / _dragSensitivity;
+                    double newPosition = sheetPosition - detail.delta.dy / _dragSensitivity;
 
                     if (newPosition < _minPosition) {
                       newPosition = _minPosition;
@@ -340,9 +336,7 @@ class _LocationBottomSheetState extends ConsumerState<LocationBottomSheet> {
                       newPosition = _maxPosition;
                     }
 
-                    ref
-                        .read(homeProvider.notifier)
-                        .setBottomSheetPosition(height: newPosition);
+                    ref.read(homeProvider.notifier).setBottomSheetPosition(height: newPosition);
                   });
                 },
                 child: Padding(

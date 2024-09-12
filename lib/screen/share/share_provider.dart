@@ -2,9 +2,11 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gather_here/common/location/location_manager.dart';
+import 'package:gather_here/common/model/request/room_exit_model.dart';
 import 'package:gather_here/common/model/response/room_response_model.dart';
 import 'package:gather_here/common/model/socket_model.dart';
 import 'package:gather_here/common/model/socket_response_model.dart';
+import 'package:gather_here/common/repository/room_repository.dart';
 import 'package:gather_here/screen/share/socket_manager.dart';
 
 class ShareState {
@@ -28,13 +30,16 @@ class ShareState {
 
 final shareProvider = AutoDisposeStateNotifierProvider<ShareProvider, ShareState>((ref) {
   final socketManage = ref.watch(socketManagerProvider);
-  return ShareProvider(socketManager: socketManage);
+  final roomRepo = ref.watch(roomRepositoryProvider);
+  return ShareProvider(roomRepository: roomRepo, socketManager: socketManage);
 });
 
 class ShareProvider extends StateNotifier<ShareState> {
+  final RoomRepository roomRepository;
   final SocketManager socketManager;
 
   ShareProvider({
+    required this.roomRepository,
     required this.socketManager,
   }) : super(ShareState(members: [])) {}
 
@@ -83,15 +88,17 @@ class ShareProvider extends StateNotifier<ShareState> {
       Map<String, dynamic> resultMap = jsonDecode(position);
       final results = SocketResponseModel.fromJson(resultMap);
       state.members = results.memberLocationResList;
-      print('members: ${results.memberLocationResList.first.presentLng}');
-      print('members: ${results.memberLocationResList.first.presentLat}');
+      print('members: ${results.memberLocationResList.length}');
       _setState();
     });
   }
 
   // 소켓연결종료
-  void disconnectSocket() {
-    socketManager.close();
+  void disconnectSocket() async {
+    if (state.roomModel?.roomSeq != null) {
+      await socketManager.close();
+      roomRepository.postExitRoom(body: RoomExitModel(roomSeq: state.roomModel!.roomSeq));
+    }
   }
 
   // 소켓 통신

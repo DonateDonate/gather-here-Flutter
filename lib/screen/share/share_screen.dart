@@ -23,7 +23,6 @@ class ShareScreen extends ConsumerStatefulWidget {
 }
 
 class _ShareScreenState extends ConsumerState<ShareScreen> {
-
   @override
   void initState() {
     super.initState();
@@ -128,12 +127,16 @@ class _MapState extends ConsumerState<_Map> {
           markers: vm.members
               .map(
                 (result) => Marker(
-              markerId: MarkerId('${result.hashCode}'),
-              position:
-              LatLng(result.presentLat, result.presentLng),
-            ),
-          )
+                  markerId: MarkerId('${result.hashCode}'),
+                  position: LatLng(result.presentLat, result.presentLng),
+                ),
+              )
               .toSet(),
+        ),
+        Positioned(
+          top: 120,
+          left: 50,
+          child: Text('MyLocation ${vm.myLat} \n ${vm.myLong}'),
         ),
         Positioned(
           bottom: 20,

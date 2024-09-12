@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -14,6 +15,8 @@ class DefaultLayout extends StatelessWidget {
   final Color backgroundColor; // View BackgroundColor
   final Color appBarBackgroundColor; // AppBar BackgroundColor
 
+  final List<Widget> trailing; // appBar Trailing
+
   const DefaultLayout({
     required this.child,
     this.title,
@@ -22,6 +25,7 @@ class DefaultLayout extends StatelessWidget {
     this.fontWeight = FontWeight.w700,
     this.backgroundColor = AppColor.background,
     this.appBarBackgroundColor = AppColor.background,
+    this.trailing = const [],
     super.key,
   });
 
@@ -57,6 +61,7 @@ class DefaultLayout extends StatelessWidget {
               icon: Icon(Icons.arrow_back_rounded, size: 24),
             )
           : null,
+      actions: trailing,
     );
   }
 }
