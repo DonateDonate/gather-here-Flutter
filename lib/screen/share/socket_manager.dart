@@ -14,7 +14,7 @@ final socketManagerProvider = Provider((ref) {
 });
 
 class SocketManager {
-  late final WebSocketChannel _channel;
+  late WebSocketChannel _channel;
   final FlutterSecureStorage storage;
 
   SocketManager({
@@ -24,19 +24,15 @@ class SocketManager {
   Future<void> connect() async {
     final token = await storage.read(key: StorageKey.accessToken.name);
 
-    print('token: $token');
-
     final wsUrl = Uri.parse(Const.socketUrl);
     _channel = IOWebSocketChannel.connect(
       wsUrl,
       headers: {'Authorization': '$token'},
     );
 
-    print('protocol ${_channel.protocol}');
-
     await _channel.ready;
 
-    print('connect?');
+    print('connect soekct');
   }
 
   Future<void> close() async {

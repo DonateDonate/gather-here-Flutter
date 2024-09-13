@@ -39,25 +39,32 @@ class HomeState {
   });
 }
 
-final homeProvider =
-    AutoDisposeStateNotifierProvider<HomeProvider, HomeState>((ref) {
+final homeProvider = AutoDisposeStateNotifierProvider<HomeProvider, HomeState>((ref) {
   final mapRepo = ref.watch(mapRepositoryProvider);
   final roomRepo = ref.watch(roomRepositoryProvider);
   final memberRepo = ref.watch(memberRepositoryProvider);
-  return HomeProvider(mapRepo: mapRepo, memberRepo: memberRepo, roomRepo: roomRepo);
+  final locationManager = ref.watch(locationManagerProvider);
+
+  return HomeProvider(
+    mapRepo: mapRepo,
+    memberRepo: memberRepo,
+    roomRepo: roomRepo,
+    locationManager: locationManager,
+  );
 });
 
 class HomeProvider extends StateNotifier<HomeState> {
   final RoomRepository roomRepo;
   final MapRepository mapRepo;
   final MemberRepository memberRepo;
+  final LocationManager locationManager;
 
   HomeProvider({
     required this.roomRepo,
     required this.mapRepo,
     required this.memberRepo,
-  }) : super(HomeState()){
-  }
+    required this.locationManager,
+  }) : super(HomeState()) {}
 
   void _setState() {
     state = HomeState(
@@ -85,8 +92,7 @@ class HomeProvider extends StateNotifier<HomeState> {
     }
 
     try {
-      final result = await roomRepo.postJoinRoom(
-          body: RoomJoinModel(shareCode: state.inviteCode!));
+      final result = await roomRepo.postJoinRoom(body: RoomJoinModel(shareCode: state.inviteCode!));
       return result;
     } catch (err) {
       print('${err.toString()}');
@@ -108,22 +114,19 @@ class HomeProvider extends StateNotifier<HomeState> {
     state.targetDate = DateTime(2024, 08, 30);
     state.targetTime = TimeOfDay(hour: 21, minute: 0);
 
-    if (state.targetDate != null &&
-        state.targetTime != null &&
-        state.selectedResult != null) {
-
+    if (state.targetDate != null && state.targetTime != null && state.selectedResult != null) {
       try {
         final result = await roomRepo.postCreateRoom(
           body: RoomCreateModel(
             destinationLat: double.parse(state.selectedResult!.y),
             destinationLng: double.parse(state.selectedResult!.x),
             destinationName: state.selectedResult?.place_name ?? "",
-            encounterDate: "2024-09-11 23:00",
+            encounterDate: "2024-09-30 23:00",
           ),
         );
         print(result.toString());
         return result;
-      } catch(err) {
+      } catch (err) {
         print(err.toString());
       }
     }
@@ -141,19 +144,15 @@ class HomeProvider extends StateNotifier<HomeState> {
     _setState();
 
     // 현재좌표와, 쿼리가 있다면 검색하기
-    if (state.query != null &&
-        state.query!.isNotEmpty &&
-        state.lat != null &&
-        state.lon != null) {
-      final result = await mapRepo.getSearchResults(
-          query: state.query!, x: state.lon!, y: state.lat!);
+    if (state.query != null && state.query!.isNotEmpty && state.lat != null && state.lon != null) {
+      final result = await mapRepo.getSearchResults(query: state.query!, x: state.lon!, y: state.lat!);
       state.results = result.documents ?? [];
       _setState();
     }
   }
 
   void getCurrentLocation(VoidCallback completion) async {
-    final position = await LocationManager.getCurrentPosition();
+    final position = await locationManager.getCurrentPosition();
     state.lat = position.latitude;
     state.lon = position.longitude;
     _setState();

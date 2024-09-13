@@ -31,16 +31,24 @@ class ShareState {
 final shareProvider = AutoDisposeStateNotifierProvider<ShareProvider, ShareState>((ref) {
   final socketManage = ref.watch(socketManagerProvider);
   final roomRepo = ref.watch(roomRepositoryProvider);
-  return ShareProvider(roomRepository: roomRepo, socketManager: socketManage);
+  final locationManager = ref.watch(locationManagerProvider);
+
+  return ShareProvider(
+    roomRepository: roomRepo,
+    socketManager: socketManage,
+    locationManager: locationManager,
+  );
 });
 
 class ShareProvider extends StateNotifier<ShareState> {
   final RoomRepository roomRepository;
   final SocketManager socketManager;
+  final LocationManager locationManager;
 
   ShareProvider({
     required this.roomRepository,
     required this.socketManager,
+    required this.locationManager,
   }) : super(ShareState(members: [])) {}
 
   void _setState() {
@@ -58,7 +66,7 @@ class ShareProvider extends StateNotifier<ShareState> {
   Future<void> setInitState(String isHost, RoomResponseModel roomModel) async {
     state.isHost = isHost;
     state.roomModel = roomModel;
-    final position = await LocationManager.getCurrentPosition();
+    final position = await locationManager.getCurrentPosition();
     state.myLat = position.latitude;
     state.myLong = position.longitude;
     _setState();
@@ -67,7 +75,7 @@ class ShareProvider extends StateNotifier<ShareState> {
   // 소켓과 최초연결
   Future<void> connectSocket() async {
     await socketManager.connect();
-    final distance = LocationManager.calculateDistance(
+    final distance = locationManager.calculateDistance(
       state.myLat!,
       state.myLong!,
       state.roomModel!.destinationLat,
@@ -113,7 +121,7 @@ class ShareProvider extends StateNotifier<ShareState> {
   void setPosition(double lat, double long) {
     state.myLat = lat;
     state.myLong = long;
-    final distance = LocationManager.calculateDistance(
+    final distance = locationManager.calculateDistance(
       state.myLat!,
       state.myLong!,
       state.roomModel!.destinationLat,
@@ -125,7 +133,7 @@ class ShareProvider extends StateNotifier<ShareState> {
 
   // 위치정보 구독하기
   void observeMyLocation() {
-    LocationManager.observePosition().listen(
+    locationManager.observePosition().listen(
       (position) {
         print(position.toString());
         if (position != null) {

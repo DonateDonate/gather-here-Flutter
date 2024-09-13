@@ -50,6 +50,7 @@ class CustomInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     debugPrint('[ERR] [${err.requestOptions.method}] ${err.requestOptions.uri}');
     debugPrint(err.stackTrace.toString());
+    debugPrint('[ERR Res] ${err.response?.data}');
 
     // 토큰 갱신 오류가 아니면, 그대로 에러 던지기
     if (err.response?.statusCode != 401) {
