@@ -18,7 +18,6 @@ class HomeState {
   List<SearchDocumentsModel> results; // 장소 검색 결과
   SearchDocumentsModel? selectedResult; // 선택한 장소
   String? inviteCode; // 초대코드
-  double sheetPosition; // 바텀시트 높이
 
   DateTime? targetDate;
   TimeOfDay? targetTime;
@@ -34,7 +33,6 @@ class HomeState {
     this.inviteCode,
     this.targetDate,
     this.targetTime,
-    this.sheetPosition = 0.05,
     this.infoModel,
   });
 }
@@ -76,7 +74,6 @@ class HomeProvider extends StateNotifier<HomeState> {
       inviteCode: state.inviteCode,
       targetDate: state.targetDate,
       targetTime: state.targetTime,
-      sheetPosition: state.sheetPosition,
       infoModel: state.infoModel,
     );
   }
@@ -162,13 +159,6 @@ class HomeProvider extends StateNotifier<HomeState> {
   // 지도의 마커를 눌렀을 때
   void tapLocationMarker(SearchDocumentsModel model) {
     state.selectedResult = model;
-    state.sheetPosition = 0.3;
-    _setState();
-  }
-
-  // 바텀시트의 position 변경
-  void setBottomSheetPosition({required double height}) {
-    state.sheetPosition = height;
     _setState();
   }
 }
