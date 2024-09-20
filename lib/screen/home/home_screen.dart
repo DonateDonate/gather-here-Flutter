@@ -193,6 +193,13 @@ class _MapState extends ConsumerState<_Map> {
   Widget build(BuildContext context) {
     final vm = ref.watch(homeProvider);
 
+    // 검색 결과가 바뀔때마다 카메라 이동
+    ref.listen(homeProvider.select((value) => value.results), (prev, next) {
+      if (prev != next && next.isNotEmpty) {
+        moveToTargetPosition(lat: double.parse(next.first.y), lon: double.parse(next.first.x));
+      }
+    });
+
     return Stack(
       children: [
         GoogleMap(
