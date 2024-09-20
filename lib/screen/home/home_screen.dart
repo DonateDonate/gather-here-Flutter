@@ -14,133 +14,164 @@ import 'package:gather_here/screen/share/share_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   static get name => 'home';
 
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  late FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _focusNode.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
     final vm = ref.watch(homeProvider);
 
-    return DefaultLayout(
-      trailing: [
-        IconButton(
-          onPressed: () {
-            context.goNamed(DebugScreen.name);
-          },
-          icon: Icon(Icons.add),
-        ),
-      ],
-      child: Stack(
-        children: [
-          _Map(),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Column(
-                children: [
-                  _SearchBar(),
-                  Spacer(),
-                  DefaultButton(
-                    title: '참여하기',
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: Text('참여코드를 입력해주세요'),
-                            content: DefaultTextFormField(
-                              label: '4자리 코드를 입력해주세요',
-                              onChanged: (text) => ref.read(homeProvider.notifier).inviteCodeChanged(value: text),
-                            ),
-                            actions: [
-                              DefaultButton(
-                                title: '확인',
-                                onTap: () async {
-                                  final result = await ref.read(homeProvider.notifier).tapInviteButton();
-                                  if (result != null) {
-                                    context.goNamed(
-                                      ShareScreen.name,
-                                      pathParameters: {'isHost': 'false'},
-                                      extra: result,
-                                    );
-                                  } else {
-                                    print('Error: 방입장 실패');
-                                  }
-                                },
-                              )
-                            ],
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-          LocationBottomSheet(
-            content: [
-              Text(
-                '${vm.selectedResult?.place_name}',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
-              ),
-              Text('${vm.selectedResult?.road_address_name}'),
-              Text('현위치로부터 ${vm.selectedResult?.distance}m'),
-              const SizedBox(height: 20),
-              DefaultButton(
-                title: '목적지로 설정',
-                height: 40,
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: Text('${MediaQuery.of(context).size.height}'),
-                        content: Container(
-                          height: 100,
-                          child: Column(
-                            children: [
-                              GestureDetector(
-                                onTap: () async {
-// TODO: DatePicker
-                                },
-                                child: Text('날짜: ${vm.targetDate}'),
-                              ),
-                              GestureDetector(
-                                onTap: () async {
-// TODO: TimePicker
-                                },
-                                child: Text('시간: ${vm.targetTime}'),
-                              )
-                            ],
-                          ),
-                        ),
-                        actions: [
-                          DefaultButton(
-                            title: '위치공유 시작하기',
-                            onTap: () async {
-                              final result = await ref.read(homeProvider.notifier).tapStartSharingButton();
-                              print(result);
-                              if (result != null) {
-                                context.goNamed(
-                                  ShareScreen.name,
-                                  pathParameters: {'isHost': 'true'},
-                                  extra: result,
-                                );
-                              }
-                            },
-                          )
-                        ],
-                      );
-                    },
-                  );
-                },
-              )
-            ],
+    return Focus(
+      focusNode: _focusNode,
+      onFocusChange: (hasFocus) {
+        if (hasFocus) {
+          ref.read(homeProvider.notifier).getMyInfo();
+        }
+      },
+      child: DefaultLayout(
+        trailing: [
+          IconButton(
+            onPressed: () {
+              context.goNamed(DebugScreen.name);
+            },
+            icon: Icon(Icons.add),
           ),
         ],
+        child: Stack(
+          children: [
+            _Map(),
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Column(
+                  children: [
+                    _SearchBar(),
+                    Spacer(),
+                    DefaultButton(
+                      title: '참여하기',
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: Text('참여코드를 입력해주세요'),
+                              content: DefaultTextFormField(
+                                label: '4자리 코드를 입력해주세요',
+                                onChanged: (text) => ref.read(homeProvider.notifier).inviteCodeChanged(value: text),
+                              ),
+                              actions: [
+                                DefaultButton(
+                                  title: '확인',
+                                  onTap: () async {
+                                    final result = await ref.read(homeProvider.notifier).tapInviteButton();
+                                    if (result != null) {
+                                      context.goNamed(
+                                        ShareScreen.name,
+                                        pathParameters: {'isHost': 'false'},
+                                        extra: result,
+                                      );
+                                    } else {
+                                      print('Error: 방입장 실패');
+                                    }
+                                  },
+                                )
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            LocationBottomSheet(
+              content: [
+                Text(
+                  '${vm.selectedResult?.place_name}',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+                ),
+                Text('${vm.selectedResult?.road_address_name}'),
+                Text('현위치로부터 ${vm.selectedResult?.distance}m'),
+                const SizedBox(height: 20),
+                DefaultButton(
+                  title: '목적지로 설정',
+                  height: 40,
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: Text('${MediaQuery.of(context).size.height}'),
+                          content: Container(
+                            height: 100,
+                            child: Column(
+                              children: [
+                                GestureDetector(
+                                  onTap: () async {
+      // TODO: DatePicker
+                                  },
+                                  child: Text('날짜: ${vm.targetDate}'),
+                                ),
+                                GestureDetector(
+                                  onTap: () async {
+      // TODO: TimePicker
+                                  },
+                                  child: Text('시간: ${vm.targetTime}'),
+                                )
+                              ],
+                            ),
+                          ),
+                          actions: [
+                            DefaultButton(
+                              title: '위치공유 시작하기',
+                              onTap: () async {
+                                final result = await ref.read(homeProvider.notifier).tapStartSharingButton();
+                                print(result);
+                                if (result != null) {
+                                  context.goNamed(
+                                    ShareScreen.name,
+                                    pathParameters: {'isHost': 'true'},
+                                    extra: result,
+                                  );
+                                }
+                              },
+                            )
+                          ],
+                        );
+                      },
+                    );
+                  },
+                )
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -156,18 +187,6 @@ class _SearchBar extends ConsumerStatefulWidget {
 
 class _SearchBarState extends ConsumerState<_SearchBar> {
   final _searchController = SearchController();
-
-  @override
-  void initState() {
-    super.initState();
-    ref.read(homeProvider.notifier).getMyInfo();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    EasyDebounce.cancel('query');
-  }
 
   @override
   Widget build(BuildContext context) {

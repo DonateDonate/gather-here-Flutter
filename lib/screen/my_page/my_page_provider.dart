@@ -8,6 +8,7 @@ import 'package:gather_here/common/model/request/nickname_model.dart';
 import 'package:gather_here/common/model/request/password_model.dart';
 import 'package:gather_here/common/model/response/member_info_model.dart';
 import 'package:gather_here/common/model/response/profile_image_url_model.dart';
+import 'package:gather_here/common/provider/member_info_provider.dart';
 import 'package:gather_here/common/repository/member_repository.dart';
 import 'package:gather_here/common/storage/storage.dart';
 
@@ -20,12 +21,14 @@ final myPageProvider = AutoDisposeStateNotifierProvider<MyPageProvider,
   final memberRepository = ref.watch(memberRepositoryProvider);
   final authRepository = ref.watch(authRepositoryProvider);
   final dio = ref.watch(dioProvider);
+  final memberInfo = ref.watch(memberInfoProvider.notifier);
   final storage = ref.watch(storageProvider);
 
   return MyPageProvider(
     memberRepository: memberRepository,
     authRepository: authRepository,
     dio: dio,
+    memberInfoProvider: memberInfo,
     storage: storage,
   );
 });
@@ -34,26 +37,33 @@ class MyPageProvider extends StateNotifier<AsyncValue<MemberInfoModel>> {
   final MemberRepository memberRepository;
   final AuthRepository authRepository;
   final Dio dio;
+  final MemberInfoProvider memberInfoProvider;
   final FlutterSecureStorage storage;
 
   MyPageProvider({
     required this.memberRepository,
     required this.authRepository,
     required this.dio,
+    required this.memberInfoProvider,
     required this.storage,
   }) : super(const AsyncValue.loading()) {
     // 초기 상태를 로딩 상태로 설정
     getMyInfo();
   }
 
-  Future<void> getMyInfo() async {
+  void getMyInfo() async {
     try {
-      final memberInfo = await memberRepository.getMemberInfo();
-      state = AsyncValue.data(memberInfo);
+      final memberInfo = await memberInfoProvider.getMyInfo();
+      if (memberInfo != null) {
+        state = AsyncValue.data(memberInfo);
+      } else {
+        throw Exception("No member information found");
+      }
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);
     }
   }
+
 
   Future<bool> changeProfileImage(File imageFile) async {
     try {
@@ -100,7 +110,7 @@ class MyPageProvider extends StateNotifier<AsyncValue<MemberInfoModel>> {
     try {
       await memberRepository.patchChangeNickName(
           body: NicknameModel(nickname: nickName));
-      getMyInfo;
+      getMyInfo();
       return true;
     } catch (e) {
       debugPrint('changeNickName Err: $e');

@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:gather_here/common/location/location_manager.dart';
-import 'package:gather_here/common/model/response/member_info_model.dart';
 import 'package:gather_here/common/model/request/room_create_model.dart';
 import 'package:gather_here/common/model/request/room_join_model.dart';
+import 'package:gather_here/common/model/response/member_info_model.dart';
 import 'package:gather_here/common/model/response/room_response_model.dart';
 import 'package:gather_here/common/model/response/search_response_model.dart';
+import 'package:gather_here/common/repository/app_info_repository.dart';
 import 'package:gather_here/common/repository/map_repository.dart';
-import 'package:gather_here/common/repository/member_repository.dart';
 import 'package:gather_here/common/repository/room_repository.dart';
+
+import '../../common/provider/member_info_provider.dart';
+import '../../common/storage/storage.dart';
 
 class HomeState {
   String? query; // 검색어
@@ -42,29 +45,39 @@ class HomeState {
 final homeProvider = AutoDisposeStateNotifierProvider<HomeProvider, HomeState>((ref) {
   final mapRepo = ref.watch(mapRepositoryProvider);
   final roomRepo = ref.watch(roomRepositoryProvider);
-  final memberRepo = ref.watch(memberRepositoryProvider);
+  final appInfoRepo = ref.watch(appInfoRepositoryProvider);
   final locationManager = ref.watch(locationManagerProvider);
+  final memberInfo = ref.watch(memberInfoProvider.notifier);
+  final storage = ref.watch(storageProvider);
 
   return HomeProvider(
     mapRepo: mapRepo,
-    memberRepo: memberRepo,
     roomRepo: roomRepo,
+    appInfoRepo: appInfoRepo,
     locationManager: locationManager,
+    memberInfoProvider: memberInfo,
+    storage: storage,
   );
 });
 
 class HomeProvider extends StateNotifier<HomeState> {
   final RoomRepository roomRepo;
   final MapRepository mapRepo;
-  final MemberRepository memberRepo;
+  final AppInfoRepository appInfoRepo;
   final LocationManager locationManager;
+  final MemberInfoProvider memberInfoProvider;
+  final FlutterSecureStorage storage;
 
   HomeProvider({
     required this.roomRepo,
     required this.mapRepo,
-    required this.memberRepo,
+    required this.appInfoRepo,
     required this.locationManager,
-  }) : super(HomeState()) {}
+    required this.memberInfoProvider,
+    required this.storage,
+  }) : super(HomeState()) {
+    getAppInfo();
+  }
 
   void _setState() {
     state = HomeState(
@@ -102,11 +115,24 @@ class HomeProvider extends StateNotifier<HomeState> {
 
   void getMyInfo() async {
     try {
-      final memberInfo = await memberRepo.getMemberInfo();
-      state.infoModel = memberInfo;
-      _setState();
+      final memberInfo = await memberInfoProvider.getMyInfo();
+      if (memberInfo != null) {
+        state.infoModel = memberInfo;
+        _setState();
+      } else {
+        throw Exception("No member information found");
+      }
+    } catch (e, stackTrace) {
+
+    }
+  }
+
+  void getAppInfo() async {
+    try {
+      final result =  await appInfoRepo.getAppInfo();
+      storage.write(key: StorageKey.appInfo.name, value: result.appVersion);
     } catch (err) {
-      debugPrint('getMyInfo: $err');
+      debugPrint('앱 정보 가져오기 실패');
     }
   }
 
