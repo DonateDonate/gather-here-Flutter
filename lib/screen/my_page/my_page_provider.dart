@@ -21,14 +21,12 @@ final myPageProvider = AutoDisposeStateNotifierProvider<MyPageProvider,
   final memberRepository = ref.watch(memberRepositoryProvider);
   final authRepository = ref.watch(authRepositoryProvider);
   final dio = ref.watch(dioProvider);
-  final memberInfo = ref.watch(memberInfoProvider.notifier);
   final storage = ref.watch(storageProvider);
 
   return MyPageProvider(
     memberRepository: memberRepository,
     authRepository: authRepository,
     dio: dio,
-    memberInfoProvider: memberInfo,
     storage: storage,
   );
 });
@@ -37,31 +35,15 @@ class MyPageProvider extends StateNotifier<AsyncValue<MemberInfoModel>> {
   final MemberRepository memberRepository;
   final AuthRepository authRepository;
   final Dio dio;
-  final MemberInfoProvider memberInfoProvider;
   final FlutterSecureStorage storage;
 
   MyPageProvider({
     required this.memberRepository,
     required this.authRepository,
     required this.dio,
-    required this.memberInfoProvider,
     required this.storage,
   }) : super(const AsyncValue.loading()) {
     // 초기 상태를 로딩 상태로 설정
-    getMyInfo();
-  }
-
-  void getMyInfo() async {
-    try {
-      final memberInfo = await memberInfoProvider.getMyInfo();
-      if (memberInfo != null) {
-        state = AsyncValue.data(memberInfo);
-      } else {
-        throw Exception("No member information found");
-      }
-    } catch (e, stackTrace) {
-      state = AsyncValue.error(e, stackTrace);
-    }
   }
 
 
@@ -110,7 +92,6 @@ class MyPageProvider extends StateNotifier<AsyncValue<MemberInfoModel>> {
     try {
       await memberRepository.patchChangeNickName(
           body: NicknameModel(nickname: nickName));
-      getMyInfo();
       return true;
     } catch (e) {
       debugPrint('changeNickName Err: $e');

@@ -26,8 +26,6 @@ class HomeState {
   DateTime? targetDate;
   TimeOfDay? targetTime;
 
-  MemberInfoModel? infoModel;
-
   HomeState({
     this.query,
     this.lat,
@@ -38,7 +36,6 @@ class HomeState {
     this.targetDate,
     this.targetTime,
     this.sheetPosition = 0.05,
-    this.infoModel,
   });
 }
 
@@ -47,7 +44,6 @@ final homeProvider = AutoDisposeStateNotifierProvider<HomeProvider, HomeState>((
   final roomRepo = ref.watch(roomRepositoryProvider);
   final appInfoRepo = ref.watch(appInfoRepositoryProvider);
   final locationManager = ref.watch(locationManagerProvider);
-  final memberInfo = ref.watch(memberInfoProvider.notifier);
   final storage = ref.watch(storageProvider);
 
   return HomeProvider(
@@ -55,7 +51,6 @@ final homeProvider = AutoDisposeStateNotifierProvider<HomeProvider, HomeState>((
     roomRepo: roomRepo,
     appInfoRepo: appInfoRepo,
     locationManager: locationManager,
-    memberInfoProvider: memberInfo,
     storage: storage,
   );
 });
@@ -65,7 +60,6 @@ class HomeProvider extends StateNotifier<HomeState> {
   final MapRepository mapRepo;
   final AppInfoRepository appInfoRepo;
   final LocationManager locationManager;
-  final MemberInfoProvider memberInfoProvider;
   final FlutterSecureStorage storage;
 
   HomeProvider({
@@ -73,7 +67,6 @@ class HomeProvider extends StateNotifier<HomeState> {
     required this.mapRepo,
     required this.appInfoRepo,
     required this.locationManager,
-    required this.memberInfoProvider,
     required this.storage,
   }) : super(HomeState()) {
     getAppInfo();
@@ -90,7 +83,6 @@ class HomeProvider extends StateNotifier<HomeState> {
       targetDate: state.targetDate,
       targetTime: state.targetTime,
       sheetPosition: state.sheetPosition,
-      infoModel: state.infoModel,
     );
   }
 
@@ -110,20 +102,6 @@ class HomeProvider extends StateNotifier<HomeState> {
     } catch (err) {
       print('${err.toString()}');
       return null;
-    }
-  }
-
-  void getMyInfo() async {
-    try {
-      final memberInfo = await memberInfoProvider.getMyInfo();
-      if (memberInfo != null) {
-        state.infoModel = memberInfo;
-        _setState();
-      } else {
-        throw Exception("No member information found");
-      }
-    } catch (e, stackTrace) {
-
     }
   }
 

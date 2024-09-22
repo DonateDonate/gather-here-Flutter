@@ -26,13 +26,12 @@ class MemberInfoProvider extends StateNotifier<MemberInfoState> {
     required this.memberRepository,
   }) : super(MemberInfoState());
 
-  Future<MemberInfoModel?> getMyInfo() async {
+  Future<void> getMyInfo() async {
     try {
       final memberInfo = await memberRepository.getMemberInfo();
-      return memberInfo;
+      state = MemberInfoState(memberInfoModel: memberInfo);
     } catch (e, stackTrace) {
       debugPrint('getMyInfo: $e, $stackTrace');
-      return null;
     }
   }
 }
