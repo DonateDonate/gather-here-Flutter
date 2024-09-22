@@ -14,73 +14,111 @@ import 'package:gather_here/screen/share/share_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-class HomeScreen extends ConsumerWidget {
+import '../../common/provider/member_info_provider.dart';
+
+class HomeScreen extends ConsumerStatefulWidget {
   static get name => 'home';
 
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final vm = ref.watch(homeProvider);
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
 
-    return DefaultLayout(
-      trailing: [
-        IconButton(
-          onPressed: () {
-            context.goNamed(DebugScreen.name);
-          },
-          icon: Icon(Icons.add),
-        ),
-      ],
-      child: Stack(
-        children: [
-          _Map(),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Column(
-                children: [
-                  _SearchBar(),
-                  Spacer(),
-                  DefaultButton(
-                    title: '참여하기',
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: Text('참여코드를 입력해주세요'),
-                            content: DefaultTextFormField(
-                              label: '4자리 코드를 입력해주세요',
-                              onChanged: (text) => ref.read(homeProvider.notifier).inviteCodeChanged(value: text),
-                            ),
-                            actions: [
-                              DefaultButton(
-                                title: '확인',
-                                onTap: () async {
-                                  final result = await ref.read(homeProvider.notifier).tapInviteButton();
-                                  if (result != null) {
-                                    context.goNamed(
-                                      ShareScreen.name,
-                                      pathParameters: {'isHost': 'false'},
-                                      extra: result,
-                                    );
-                                  } else {
-                                    print('Error: 방입장 실패');
-                                  }
-                                },
-                              )
-                            ],
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  late FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _focusNode.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final homeState = ref.watch(homeProvider);
+    final memberState = ref.watch(memberInfoProvider);
+
+    return Focus(
+      focusNode: _focusNode,
+      onFocusChange: (hasFocus) {
+        if (hasFocus) {
+          ref.read(memberInfoProvider.notifier).getMyInfo();
+        }
+      },
+      child: DefaultLayout(
+        trailing: [
+          IconButton(
+            onPressed: () {
+              context.goNamed(DebugScreen.name);
+            },
+            icon: Icon(Icons.add),
           ),
         ],
+        child: Stack(
+          children: [
+            _Map(),
+            SafeArea(
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Column(
+                  children: [
+                    _SearchBar(),
+                    Spacer(),
+                    DefaultButton(
+                      title: '참여하기',
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: Text('참여코드를 입력해주세요'),
+                              content: DefaultTextFormField(
+                                label: '4자리 코드를 입력해주세요',
+                                onChanged: (text) => ref
+                                    .read(homeProvider.notifier)
+                                    .inviteCodeChanged(value: text),
+                              ),
+                              actions: [
+                                DefaultButton(
+                                  title: '확인',
+                                  onTap: () async {
+                                    final result = await ref
+                                        .read(homeProvider.notifier)
+                                        .tapInviteButton();
+                                    if (result != null) {
+                                      context.goNamed(
+                                        ShareScreen.name,
+                                        pathParameters: {'isHost': 'false'},
+                                        extra: result,
+                                      );
+                                    } else {
+                                      print('Error: 방입장 실패');
+                                    }
+                                  },
+                                )
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -98,12 +136,6 @@ class _SearchBarState extends ConsumerState<_SearchBar> {
   final _searchController = SearchController();
 
   @override
-  void initState() {
-    super.initState();
-    ref.read(homeProvider.notifier).getMyInfo();
-  }
-
-  @override
   void dispose() {
     super.dispose();
     EasyDebounce.cancel('query');
@@ -111,7 +143,7 @@ class _SearchBarState extends ConsumerState<_SearchBar> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(homeProvider);
+    final state = ref.watch(memberInfoProvider);
     return SearchBar(
       backgroundColor: const WidgetStatePropertyAll(AppColor.white),
       hintText: "목적지 검색",
@@ -127,10 +159,10 @@ class _SearchBarState extends ConsumerState<_SearchBar> {
           onPressed: () {
             context.pushNamed(MyPageScreen.name);
           },
-          icon: state.infoModel?.profileImageUrl != null
+          icon: state.memberInfoModel?.profileImageUrl != null
               ? ClipOval(
                   child: Image.network(
-                  state.infoModel!.profileImageUrl!,
+                  state.memberInfoModel!.profileImageUrl!,
                   width: 40,
                   height: 40,
                   fit: BoxFit.cover,
@@ -161,7 +193,8 @@ class _Map extends ConsumerStatefulWidget {
 }
 
 class _MapState extends ConsumerState<_Map> {
-  final Completer<GoogleMapController> _controller = Completer<GoogleMapController>();
+  final Completer<GoogleMapController> _controller =
+      Completer<GoogleMapController>();
 
   static const CameraPosition _defaultPosition = CameraPosition(
     target: LatLng(37.5642135, -127.0016985),
@@ -185,8 +218,10 @@ class _MapState extends ConsumerState<_Map> {
   // 특정 위치로 카메라 포지션 이동
   void moveToTargetPosition({required double lat, required double lon}) async {
     final GoogleMapController controller = await _controller.future;
-    final targetPosition = CameraPosition(target: LatLng(lat, lon), zoom: 14.4746);
-    await controller.animateCamera(CameraUpdate.newCameraPosition(targetPosition));
+    final targetPosition =
+        CameraPosition(target: LatLng(lat, lon), zoom: 14.4746);
+    await controller
+        .animateCamera(CameraUpdate.newCameraPosition(targetPosition));
   }
 
   @override
@@ -210,7 +245,8 @@ class _MapState extends ConsumerState<_Map> {
               .map(
                 (result) => Marker(
                   markerId: MarkerId('${result.hashCode}'),
-                  position: LatLng(double.parse(result.y), double.parse(result.x)),
+                  position:
+                      LatLng(double.parse(result.y), double.parse(result.x)),
                   onTap: () async {
                     ref.read(homeProvider.notifier).tapLocationMarker(result);
 
