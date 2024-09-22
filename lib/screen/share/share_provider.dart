@@ -95,7 +95,15 @@ class ShareProvider extends StateNotifier<ShareState> {
       print(position.runtimeType);
       Map<String, dynamic> resultMap = jsonDecode(position);
       final results = SocketResponseModel.fromJson(resultMap);
-      state.members = results.memberLocationResList;
+      final destination = SocketMemberListModel(
+        memberSeq: 0,
+        nickname: '목적지',
+        imageUrl: '',
+        presentLat: state.roomModel!.destinationLat,
+        presentLng: state.roomModel!.destinationLng,
+        destinationDistance: 0,
+      );
+      state.members = [destination] + results.memberLocationResList;
       print('members: ${results.memberLocationResList.length}');
       _setState();
     });
