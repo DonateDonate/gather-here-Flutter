@@ -25,54 +25,57 @@ class ShareScreen extends ConsumerStatefulWidget {
 class _ShareScreenState extends ConsumerState<ShareScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          _Map(isHost: widget.isHost, roomModel: widget.roomModel),
-          SafeArea(
-              child: Container(
-            color: Colors.red,
-            width: double.infinity,
-            height: 50,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Container(
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Text('09:00 남음'),
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                ),
-                Positioned(
-                  right: 16, // 오른쪽 끝에서 약간의 여백을 줌
-                  child: IconButton(
-                    onPressed: () {
-                      ref.read(shareProvider.notifier).disconnectSocket();
-                      context.pop();
-                    },
-                    icon: Container(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Icon(
-                          Icons.exit_to_app,
-                          size: 24,
-                        ),
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        body: Stack(
+          children: [
+            _Map(isHost: widget.isHost, roomModel: widget.roomModel),
+            SafeArea(
+                child: Container(
+              color: Colors.red,
+              width: double.infinity,
+              height: 50,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Text('09:00 남음'),
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(25),
                     ),
                   ),
-                )
-              ],
-            ),
-          ))
-        ],
+                  Positioned(
+                    right: 16, // 오른쪽 끝에서 약간의 여백을 줌
+                    child: IconButton(
+                      onPressed: () {
+                        ref.read(shareProvider.notifier).disconnectSocket();
+                        context.pop();
+                      },
+                      icon: Container(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Icon(
+                            Icons.exit_to_app,
+                            size: 24,
+                          ),
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ))
+          ],
+        ),
       ),
     );
   }
@@ -117,7 +120,7 @@ class _MapState extends ConsumerState<_Map> {
   // 특정 위치로 카메라 포지션 이동
   void moveToTargetPosition({required double lat, required double lon}) async {
     final GoogleMapController controller = await _controller.future;
-    final targetPosition = CameraPosition(target: LatLng(lat, lon), zoom: 14.4746);
+    final targetPosition = CameraPosition(target: LatLng(lat, lon), zoom: 10);
     await controller.animateCamera(CameraUpdate.newCameraPosition(targetPosition));
   }
 
