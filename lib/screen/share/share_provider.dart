@@ -132,7 +132,7 @@ class ShareProvider extends StateNotifier<ShareState> {
   }
 
   // 위치정보 구독하기
-  void observeMyLocation() {
+  void observeMyLocation(void Function(double, double) callback) {
     locationManager.observePosition().listen(
       (position) {
         print(position.toString());
@@ -140,6 +140,7 @@ class ShareProvider extends StateNotifier<ShareState> {
           print('my position ${position}');
           setPosition(position.latitude, position.longitude);
           deliveryMyInfo(2);
+          callback(position.latitude, position.longitude);
         }
       },
     );

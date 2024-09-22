@@ -24,23 +24,11 @@ class ShareScreen extends ConsumerStatefulWidget {
 
 class _ShareScreenState extends ConsumerState<ShareScreen> {
   @override
-  void initState() {
-    super.initState();
-    _setup();
-  }
-
-  void _setup() async {
-    await ref.read(shareProvider.notifier).setInitState(widget.isHost, widget.roomModel);
-    await ref.read(shareProvider.notifier).connectSocket();
-    ref.read(shareProvider.notifier).observeMyLocation();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          _Map(),
+          _Map(isHost: widget.isHost, roomModel: widget.roomModel),
           SafeArea(
               child: Container(
             color: Colors.red,
@@ -91,7 +79,14 @@ class _ShareScreenState extends ConsumerState<ShareScreen> {
 }
 
 class _Map extends ConsumerStatefulWidget {
-  const _Map({super.key});
+  final String isHost;
+  final RoomResponseModel roomModel;
+
+  const _Map({
+    required this.isHost,
+    required this.roomModel,
+    super.key,
+  });
 
   @override
   ConsumerState<_Map> createState() => _MapState();
@@ -101,9 +96,23 @@ class _MapState extends ConsumerState<_Map> {
   final Completer<GoogleMapController> _controller = Completer<GoogleMapController>();
 
   static const CameraPosition _defaultPosition = CameraPosition(
-    target: LatLng(37.5642135, -127.0016985),
+    target: LatLng(37.5642135, 127.0016985),
     zoom: 14.4746,
   );
+
+  @override
+  void initState() {
+    super.initState();
+    _setup();
+  }
+
+  void _setup() async {
+    await ref.read(shareProvider.notifier).setInitState(widget.isHost, widget.roomModel);
+    await ref.read(shareProvider.notifier).connectSocket();
+    ref.read(shareProvider.notifier).observeMyLocation((lat, lon) {
+      moveToTargetPosition(lat: lat, lon: lon);
+    });
+  }
 
   // 특정 위치로 카메라 포지션 이동
   void moveToTargetPosition({required double lat, required double lon}) async {
@@ -114,7 +123,8 @@ class _MapState extends ConsumerState<_Map> {
 
   @override
   Widget build(BuildContext context) {
-    final vm = ref.watch(shareProvider);
+    final state = ref.watch(shareProvider);
+
     return Stack(
       children: [
         GoogleMap(
@@ -124,7 +134,7 @@ class _MapState extends ConsumerState<_Map> {
           onMapCreated: (controller) {
             _controller.complete(controller);
           },
-          markers: vm.members
+          markers: state.members
               .map(
                 (result) => Marker(
                   markerId: MarkerId('${result.hashCode}'),
@@ -136,15 +146,15 @@ class _MapState extends ConsumerState<_Map> {
         Positioned(
           top: 120,
           left: 50,
-          child: Text('MyLocation ${vm.myLat} \n ${vm.myLong}'),
+          child: Text('MyLocation ${state.myLat} \n ${state.myLong}'),
         ),
         Positioned(
           bottom: 20,
           left: 20,
           child: IconButton(
             onPressed: () {
-              if (vm.myLat != null && vm.myLong != null) {
-                moveToTargetPosition(lat: vm.myLat!, lon: vm.myLong!);
+              if (state.myLat != null && state.myLong != null) {
+                moveToTargetPosition(lat: state.myLat!, lon: state.myLong!);
               }
             },
             icon: Icon(Icons.my_location),
