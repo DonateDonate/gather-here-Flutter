@@ -120,7 +120,7 @@ class _MapState extends ConsumerState<_Map> {
   // 특정 위치로 카메라 포지션 이동
   void moveToTargetPosition({required double lat, required double lon}) async {
     final GoogleMapController controller = await _controller.future;
-    final targetPosition = CameraPosition(target: LatLng(lat, lon), zoom: 10);
+    final targetPosition = CameraPosition(target: LatLng(lat, lon), zoom: 14);
     await controller.animateCamera(CameraUpdate.newCameraPosition(targetPosition));
   }
 

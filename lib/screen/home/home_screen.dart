@@ -45,8 +45,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final homeState = ref.watch(homeProvider);
-    final memberState = ref.watch(memberInfoProvider);
 
     return Focus(
       focusNode: _focusNode,
