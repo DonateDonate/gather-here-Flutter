@@ -117,68 +117,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
             ),
-            LocationBottomSheet(
-              content: [
-                Text(
-                  '${homeState.selectedResult?.place_name}',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
-                ),
-                Text('${homeState.selectedResult?.road_address_name}'),
-                Text('현위치로부터 ${homeState.selectedResult?.distance}m'),
-                const SizedBox(height: 20),
-                DefaultButton(
-                  title: '목적지로 설정',
-                  height: 40,
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: Text('${MediaQuery.of(context).size.height}'),
-                          content: Container(
-                            height: 100,
-                            child: Column(
-                              children: [
-                                GestureDetector(
-                                  onTap: () async {
-                                    // TODO: DatePicker
-                                  },
-                                  child: Text('날짜: ${homeState.targetDate}'),
-                                ),
-                                GestureDetector(
-                                  onTap: () async {
-                                    // TODO: TimePicker
-                                  },
-                                  child: Text('시간: ${homeState.targetTime}'),
-                                )
-                              ],
-                            ),
-                          ),
-                          actions: [
-                            DefaultButton(
-                              title: '위치공유 시작하기',
-                              onTap: () async {
-                                final result = await ref
-                                    .read(homeProvider.notifier)
-                                    .tapStartSharingButton();
-                                print(result);
-                                if (result != null) {
-                                  context.goNamed(
-                                    ShareScreen.name,
-                                    pathParameters: {'isHost': 'true'},
-                                    extra: result,
-                                  );
-                                }
-                              },
-                            )
-                          ],
-                        );
-                      },
-                    );
-                  },
-                )
-              ],
-            ),
           ],
         ),
       ),
@@ -290,6 +228,13 @@ class _MapState extends ConsumerState<_Map> {
   Widget build(BuildContext context) {
     final vm = ref.watch(homeProvider);
 
+    // 검색 결과가 바뀔때마다 카메라 이동
+    ref.listen(homeProvider.select((value) => value.results), (prev, next) {
+      if (prev != next && next.isNotEmpty) {
+        moveToTargetPosition(lat: double.parse(next.first.y), lon: double.parse(next.first.x));
+      }
+    });
+
     return Stack(
       children: [
         GoogleMap(
@@ -302,8 +247,107 @@ class _MapState extends ConsumerState<_Map> {
                   markerId: MarkerId('${result.hashCode}'),
                   position:
                       LatLng(double.parse(result.y), double.parse(result.x)),
-                  onTap: () {
+                  onTap: () async {
                     ref.read(homeProvider.notifier).tapLocationMarker(result);
+
+                    showModalBottomSheet(
+                        context: context,
+                        // useSafeArea: true,
+                        showDragHandle: true,
+                        // barrierColor: Colors.black.withAlpha(1),
+                        backgroundColor: Colors.white,
+                        builder: (context) {
+                          return SafeArea(
+                            child: Container(
+                              height: 200,
+                              color: Colors.white,
+                              padding: EdgeInsets.fromLTRB(20, 0, 20, 10),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${vm.selectedResult?.place_name}',
+                                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+                                  ),
+                                  const SizedBox(height: 20),
+
+                                  Text(
+                                    '${vm.selectedResult?.road_address_name == '' ? '알 수 없는 주소' : vm.selectedResult?.road_address_name}',
+                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400),
+                                  ),
+
+                                  const SizedBox(height: 10),
+
+                                  Row(
+                                    children: [
+                                      Text(
+                                        '현위치로부터 ',
+                                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400),
+                                      ),
+                                      Text(
+                                        '${vm.selectedResult?.distance}m',
+                                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                                      ),
+                                    ],
+                                  ),
+
+                                  const SizedBox(height: 15),
+                                  Spacer(),
+                                  DefaultButton(
+                                    title: '목적지로 설정',
+                                    height: 40,
+                                    onTap: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return AlertDialog(
+                                            title: Text('${MediaQuery.of(context).size.height}'),
+                                            content: Container(
+                                              height: 100,
+                                              child: Column(
+                                                children: [
+                                                  GestureDetector(
+                                                    onTap: () async {
+                                                      // TODO: DatePicker
+                                                    },
+                                                    child: Text('날짜: ${vm.targetDate}'),
+                                                  ),
+                                                  GestureDetector(
+                                                    onTap: () async {
+                                                      // TODO: TimePicker
+                                                    },
+                                                    child: Text('시간: ${vm.targetTime}'),
+                                                  )
+                                                ],
+                                              ),
+                                            ),
+                                            actions: [
+                                              DefaultButton(
+                                                title: '위치공유 시작하기',
+                                                onTap: () async {
+                                                  final result =
+                                                  await ref.read(homeProvider.notifier).tapStartSharingButton();
+                                                  print(result);
+                                                  if (result != null) {
+                                                    context.goNamed(
+                                                      ShareScreen.name,
+                                                      pathParameters: {'isHost': 'true'},
+                                                      extra: result,
+                                                    );
+                                                  }
+                                                },
+                                              )
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    },
+                                  )
+                                ],
+                              ),
+                            ),
+                          );
+                        });
                   },
                 ),
               )
@@ -330,85 +374,6 @@ class _MapState extends ConsumerState<_Map> {
           ),
         ),
       ],
-    );
-  }
-}
-
-// 위치정보 bottom sheet
-class LocationBottomSheet extends ConsumerStatefulWidget {
-  final List<Widget> content;
-
-  const LocationBottomSheet({required this.content, super.key});
-
-  @override
-  ConsumerState<LocationBottomSheet> createState() =>
-      _LocationBottomSheetState();
-}
-
-class _LocationBottomSheetState extends ConsumerState<LocationBottomSheet> {
-  final double _maxPosition = 0.3;
-  final double _minPosition = 0.05;
-  final double _dragSensitivity = 600;
-
-  @override
-  Widget build(BuildContext context) {
-    final vm = ref.watch(homeProvider);
-    final sheetPosition = vm.sheetPosition;
-
-    return DraggableScrollableSheet(
-      initialChildSize: sheetPosition,
-      minChildSize: _minPosition,
-      builder: (context, scrollController) {
-        return Container(
-          color: Colors.white,
-          child: Column(
-            children: [
-              GestureDetector(
-                onVerticalDragUpdate: (detail) {
-                  setState(() {
-                    double newPosition =
-                        sheetPosition - detail.delta.dy / _dragSensitivity;
-
-                    if (newPosition < _minPosition) {
-                      newPosition = _minPosition;
-                    }
-                    if (newPosition > _maxPosition) {
-                      newPosition = _maxPosition;
-                    }
-
-                    ref
-                        .read(homeProvider.notifier)
-                        .setBottomSheetPosition(height: newPosition);
-                  });
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    width: 50,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: AppColor.grey2,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ),
-              ),
-              if (vm.selectedResult != null)
-                Flexible(
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: widget.content,
-                      ),
-                    ),
-                  ),
-                )
-            ],
-          ),
-        );
-      },
     );
   }
 }
