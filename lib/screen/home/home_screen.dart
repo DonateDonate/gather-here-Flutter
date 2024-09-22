@@ -97,7 +97,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         .read(homeProvider.notifier)
                                         .tapInviteButton();
                                     if (result != null) {
-                                      context.goNamed(
+                                      context.pop();
+                                      context.pushNamed(
                                         ShareScreen.name,
                                         pathParameters: {'isHost': 'false'},
                                         extra: result,
@@ -329,7 +330,9 @@ class _MapState extends ConsumerState<_Map> {
                                                   await ref.read(homeProvider.notifier).tapStartSharingButton();
                                                   print(result);
                                                   if (result != null) {
-                                                    context.goNamed(
+                                                    context.pop();
+                                                    context.pop();
+                                                    context.pushNamed(
                                                       ShareScreen.name,
                                                       pathParameters: {'isHost': 'true'},
                                                       extra: result,
