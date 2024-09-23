@@ -31,10 +31,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _setup();
     _focusNode = FocusNode();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
     });
+  }
+
+  void _setup() async {
+    final result = await ref.read(homeProvider.notifier).getRoomInfo();
+    if (result != null) {
+      context.pushNamed(
+        ShareScreen.name,
+        pathParameters: {'isHost': 'false'},
+        extra: result,
+      );
+    }
   }
 
   @override

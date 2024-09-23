@@ -44,4 +44,10 @@ abstract class RoomRepository {
   Future<void> postExitRoom({
     @Body() required RoomExitModel body,
   });
+
+  @Headers({
+    'accessToken': 'true',
+  })
+  @GET('/rooms')
+  Future<RoomResponseModel?> getRoom();
 }

@@ -83,6 +83,11 @@ class HomeProvider extends StateNotifier<HomeState> {
     );
   }
 
+  // 홈화면 들어왔을때 room 정보조회
+  Future<RoomResponseModel?> getRoomInfo() async {
+    return await roomRepo.getRoom();
+  }
+
   void inviteCodeChanged({required String value}) {
     state.inviteCode = value;
     _setState();
