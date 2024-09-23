@@ -15,6 +15,7 @@ class ShareState {
   double? distance; // 경도
   RoomResponseModel? roomModel;
   String? isHost;
+  int remainSeconds;
 
   List<SocketMemberListModel> members;
 
@@ -25,6 +26,7 @@ class ShareState {
     this.roomModel,
     this.isHost,
     required this.members,
+    this.remainSeconds = 0,
   });
 }
 
@@ -59,6 +61,7 @@ class ShareProvider extends StateNotifier<ShareState> {
       distance: state.distance,
       roomModel: state.roomModel,
       members: state.members,
+      remainSeconds: state.remainSeconds,
     );
   }
 
@@ -69,6 +72,13 @@ class ShareProvider extends StateNotifier<ShareState> {
     final position = await locationManager.getCurrentPosition();
     state.myLat = position.latitude;
     state.myLong = position.longitude;
+
+    // 남은 시간 계산 및 할당
+
+    final parsedDate = DateTime.parse(roomModel.encounterDate);
+    final difference = parsedDate.difference(DateTime.now());
+
+    state.remainSeconds = difference.inSeconds;
     _setState();
   }
 
@@ -95,15 +105,15 @@ class ShareProvider extends StateNotifier<ShareState> {
       print(position.runtimeType);
       Map<String, dynamic> resultMap = jsonDecode(position);
       final results = SocketResponseModel.fromJson(resultMap);
-      final destination = SocketMemberListModel(
-        memberSeq: 0,
-        nickname: '목적지',
-        imageUrl: '',
-        presentLat: state.roomModel!.destinationLat,
-        presentLng: state.roomModel!.destinationLng,
-        destinationDistance: 0,
-      );
-      state.members = [destination] + results.memberLocationResList;
+      // final destination = SocketMemberListModel(
+      //   memberSeq: 0,
+      //   nickname: '목적지',
+      //   imageUrl: '',
+      //   presentLat: state.roomModel!.destinationLat,
+      //   presentLng: state.roomModel!.destinationLng,
+      //   destinationDistance: 0,
+      // );
+      state.members = results.memberLocationResList;
       print('members: ${results.memberLocationResList.length}');
       _setState();
     });
@@ -152,5 +162,14 @@ class ShareProvider extends StateNotifier<ShareState> {
         }
       },
     );
+  }
+
+  // 타이머 ++
+  void timeTick() {
+    if (state.remainSeconds == 0) {
+      return;
+    }
+    state.remainSeconds -= 1;
+    _setState();
   }
 }
