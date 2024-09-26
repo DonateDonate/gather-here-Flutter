@@ -11,14 +11,14 @@ void main() {
   // runApp(_DesignSystemApp());
 }
 
-class _App extends StatelessWidget {
+class _App extends ConsumerWidget {
   const _App({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
       theme: ThemeData(fontFamily: 'Pretendard'),
-      routerConfig: router,
+      routerConfig: ref.read(routerProvider),
     );
   }
 }
