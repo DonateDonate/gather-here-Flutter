@@ -2,14 +2,17 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:go_router/go_router.dart';
+
 import 'package:gather_here/common/location/location_manager.dart';
 import 'package:gather_here/common/model/request/room_exit_model.dart';
 import 'package:gather_here/common/model/response/room_response_model.dart';
 import 'package:gather_here/common/model/socket_model.dart';
 import 'package:gather_here/common/model/socket_response_model.dart';
 import 'package:gather_here/common/repository/room_repository.dart';
+import 'package:gather_here/common/router/router.dart';
 import 'package:gather_here/screen/share/socket_manager.dart';
-import 'package:geolocator/geolocator.dart';
 
 class ShareState {
   double? myLat; // 위도
@@ -18,6 +21,7 @@ class ShareState {
   RoomResponseModel? roomModel;
   String? isHost;
   int remainSeconds;
+  bool isTracking;
 
   List<SocketMemberListModel> members;
 
@@ -29,6 +33,7 @@ class ShareState {
     this.isHost,
     required this.members,
     this.remainSeconds = 0,
+    this.isTracking = true,
   });
 }
 
@@ -36,11 +41,13 @@ final shareProvider = AutoDisposeStateNotifierProvider<ShareProvider, ShareState
   final socketManage = ref.watch(socketManagerProvider);
   final roomRepo = ref.watch(roomRepositoryProvider);
   final locationManager = ref.watch(locationManagerProvider);
+  final router = ref.watch(routerProvider);
 
   return ShareProvider(
     roomRepository: roomRepo,
     socketManager: socketManage,
     locationManager: locationManager,
+    router: router,
   );
 });
 
@@ -48,6 +55,7 @@ class ShareProvider extends StateNotifier<ShareState> {
   final RoomRepository roomRepository;
   final SocketManager socketManager;
   final LocationManager locationManager;
+  final GoRouter router;
 
   late final StreamSubscription<Position?> _positionStream;
 
@@ -55,8 +63,8 @@ class ShareProvider extends StateNotifier<ShareState> {
     required this.roomRepository,
     required this.socketManager,
     required this.locationManager,
+    required this.router,
   }) : super(ShareState(members: [])) {}
-
 
   void _setState() {
     state = ShareState(
@@ -67,6 +75,7 @@ class ShareProvider extends StateNotifier<ShareState> {
       roomModel: state.roomModel,
       members: state.members,
       remainSeconds: state.remainSeconds,
+      isTracking: state.isTracking,
     );
   }
 
@@ -79,7 +88,6 @@ class ShareProvider extends StateNotifier<ShareState> {
     state.myLong = position.longitude;
 
     // 남은 시간 계산 및 할당
-
     final parsedDate = DateTime.parse(roomModel.encounterDate!);
     final difference = parsedDate.difference(DateTime.now());
 
@@ -87,7 +95,7 @@ class ShareProvider extends StateNotifier<ShareState> {
     _setState();
   }
 
-  // 소켓과 최초연결
+  // 소켓 최초연결
   Future<void> connectSocket() async {
     await socketManager.connect();
     final distance = locationManager.calculateDistance(
@@ -104,32 +112,35 @@ class ShareProvider extends StateNotifier<ShareState> {
       deliveryMyInfo(1);
     }
 
-    socketManager.observeConnection().listen((position) {
-      print('callback: $position');
-      // JSON 문자열을 Map으로 변환
-      print(position.runtimeType);
-      Map<String, dynamic> resultMap = jsonDecode(position);
-      final results = SocketResponseModel.fromJson(resultMap);
-      // final destination = SocketMemberListModel(
-      //   memberSeq: 0,
-      //   nickname: '목적지',
-      //   imageUrl: '',
-      //   presentLat: state.roomModel!.destinationLat,
-      //   presentLng: state.roomModel!.destinationLng,
-      //   destinationDistance: 0,
-      // );
-      state.members = results.memberLocationResList;
-      print('members: ${results.memberLocationResList.length}');
-      _setState();
-    });
+    socketManager.observeConnection().listen(
+      (position) {
+        print('callback: $position');
+        Map<String, dynamic> resultMap = jsonDecode(position);
+        final results = SocketResponseModel.fromJson(resultMap);
+
+        state.members = results.memberLocationResList;
+        _setState();
+      },
+      onDone: () async {
+        final result = await roomRepository.getRoom();
+        // room api 조회후, 방이 남아 있다면 다시 연결 해주기
+        if (result.roomSeq != null) {
+          await connectSocket();
+        }
+        // 종료일 땐 방 나가기
+        else {
+          _positionStream.cancel();
+          router.pop();
+        }
+      },
+    );
   }
 
   // 소켓연결종료
   void disconnectSocket() async {
     if (state.roomModel?.roomSeq != null) {
+      await roomRepository.postExitRoom(body: RoomExitModel(roomSeq: state.roomModel!.roomSeq!));
       await socketManager.close();
-      _positionStream.cancel();
-      roomRepository.postExitRoom(body: RoomExitModel(roomSeq: state.roomModel!.roomSeq!));
     }
   }
 
@@ -157,10 +168,8 @@ class ShareProvider extends StateNotifier<ShareState> {
 
   // 위치정보 구독하기
   void observeMyLocation(void Function(double, double) callback) {
-    _positionStream =
-        locationManager.observePosition().listen(
+    _positionStream = locationManager.observePosition().listen(
       (position) {
-        print(position.toString());
         if (position != null) {
           print('my position ${position}');
           setPosition(position.latitude, position.longitude);

@@ -63,7 +63,6 @@ class _ShareScreenState extends ConsumerState<ShareScreen> {
                   child: IconButton(
                     onPressed: () {
                       ref.read(shareProvider.notifier).disconnectSocket();
-                      context.pop();
                     },
                     style: IconButton.styleFrom(
                       padding: EdgeInsets.zero,
