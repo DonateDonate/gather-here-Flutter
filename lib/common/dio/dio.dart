@@ -2,25 +2,31 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:gather_here/common/router/router.dart';
 import 'package:gather_here/common/storage/storage.dart';
+import 'package:gather_here/screen/login/login_screen.dart';
+import 'package:go_router/go_router.dart';
 
 final dioProvider = Provider((ref) {
   final dio = Dio();
-
-  final storage = ref.watch(storageProvider);
-
-  dio.interceptors.add(
-    CustomInterceptor(storage: storage),
-  );
-
+  final interceptor = ref.watch(interceptorProvider);
+  dio.interceptors.add(interceptor);
   return dio;
+});
+
+final interceptorProvider = Provider((ref) {
+  final storage = ref.watch(storageProvider);
+  final router = ref.watch(routerProvider);
+  return CustomInterceptor(storage: storage, router: router);
 });
 
 class CustomInterceptor extends Interceptor {
   final FlutterSecureStorage storage;
+  final GoRouter router;
 
   CustomInterceptor({
     required this.storage,
+    required this.router,
   });
 
   @override
@@ -64,20 +70,12 @@ class CustomInterceptor extends Interceptor {
 
     // accessToken 만료일때 처리 (9102: invalid, 9103: exipre)
     if (statusCode == 9102 || statusCode == 9103) {
-      final refreshToken = await storage.read(key: StorageKey.refreshToken.name);
-      // TODO: - AccessToken 갱신로직 (동작 확인해야함)
-
-      final options = err.requestOptions;
-      options.headers.addAll({'Refresh-token': refreshToken});
-
-      return handler.resolve(err.response!);
+      return _retry(err, handler);
     }
 
     // refrehToken 만료 && accessToken 없을때 처리 (로그인 화면으로 보내기)
     if (statusCode == 9104 || statusCode == 9105 || statusCode == 9106) {
-      // TODO: 토큰 삭제 처리 후 로그인 화면으로 보내기
-      storage.delete(key: StorageKey.refreshToken.name);
-      storage.delete(key: StorageKey.accessToken.name);
+      _goLogin();
     }
 
     super.onError(err, handler);
@@ -85,8 +83,7 @@ class CustomInterceptor extends Interceptor {
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    debugPrint(
-        '[RES] [${response.requestOptions.method}] ${response.requestOptions.uri}');
+    debugPrint('[RES] [${response.requestOptions.method}] ${response.requestOptions.uri}');
 
     // Headers에 토큰이 있다면 토큰 정보를 스토리지에 저장
     final refreshToken = response.headers.value('refresh-token');
@@ -102,5 +99,40 @@ class CustomInterceptor extends Interceptor {
     }
 
     super.onResponse(response, handler);
+  }
+
+  // accessToken 갱신
+  void _retry(DioException err, ErrorInterceptorHandler handler) async {
+    final refreshToken = await storage.read(key: StorageKey.refreshToken.name);
+    final options = err.requestOptions;
+
+    options.headers.addAll({'Refresh-token': refreshToken});
+
+    try {
+      final newResponse = await Dio().fetch(options);
+      final newRefreshToken = newResponse.headers.value('refresh-token');
+
+      if (newRefreshToken != null) {
+        storage.write(key: StorageKey.refreshToken.name, value: newRefreshToken);
+        print('refreshToken 저장');
+      }
+
+      final newAccessToken = newResponse.headers.value('authorization');
+      if (newAccessToken != null) {
+        storage.write(key: StorageKey.accessToken.name, value: newAccessToken);
+        print('accessToken 저장');
+      }
+
+      return handler.resolve(newResponse);
+    } catch (error) {
+      // accessToken 갱신 실패했을때 (refreshToken이 만료됬을땜) 로그인 페이지로 이동
+      _goLogin();
+    }
+  }
+
+  void _goLogin() {
+    storage.delete(key: StorageKey.refreshToken.name);
+    storage.delete(key: StorageKey.accessToken.name);
+    router.goNamed(LoginScreen.name);
   }
 }

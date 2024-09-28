@@ -21,7 +21,6 @@ abstract class AppInfoRepository {
   @GET('/appInfos')
   @Headers({
     'accessToken': 'true',
-    'refreshToken': 'true',
   })
   Future<AppInfoModel> getAppInfo();
 }

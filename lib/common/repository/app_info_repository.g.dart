@@ -22,10 +22,7 @@ class _AppInfoRepository implements AppInfoRepository {
   Future<AppInfoModel> getAppInfo() async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{
-      r'accessToken': 'true',
-      r'refreshToken': 'true',
-    };
+    final _headers = <String, dynamic>{r'accessToken': 'true'};
     _headers.removeWhere((k, v) => v == null);
     final Map<String, dynamic>? _data = null;
     final _result = await _dio
