@@ -27,7 +27,7 @@ class SearchDocumentsModel {
   final String? phone; // 전화번호
   final String x; // 경도
   final String y; // 위도
-  BitmapDescriptor? markerIcon;
+  BitmapDescriptor? markerIcon; // 마커 아이콘
 
   SearchDocumentsModel({
     required this.category_group_name,

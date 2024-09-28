@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
-import 'dart:ui' as ui;
 
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +17,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../common/model/response/search_response_model.dart';
 import '../../common/provider/member_info_provider.dart';
-import 'custom_marker.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   static get name => 'home';
@@ -183,6 +180,8 @@ class _MapState extends ConsumerState<_Map> {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
 
+  late BitmapDescriptor _defaultMarker;
+
   static const CameraPosition _defaultPosition = CameraPosition(
     target: LatLng(37.5642135, -127.0016985),
     zoom: 14.4746,
@@ -191,6 +190,7 @@ class _MapState extends ConsumerState<_Map> {
   @override
   void initState() {
     super.initState();
+    _setDefaultMarker();
     ref.read(homeProvider.notifier).getCurrentLocation(() {
       final state = ref.read(homeProvider);
 
@@ -200,33 +200,20 @@ class _MapState extends ConsumerState<_Map> {
     });
   }
 
+  Future<void> _setDefaultMarker() async {
+    _defaultMarker = await ref.read(homeProvider.notifier).createCustomMarkerBitmap('');
+  }
+
   Future<void> _loadCustomMarkers(List<SearchDocumentsModel> results) async {
     for (final result in results) {
-      final marker = await createCustomMarkerBitmap(result.place_name!);
+      final marker = await ref
+          .read(homeProvider.notifier)
+          .createCustomMarkerBitmap(result.place_name!);
       setState(() {
         // 마커 아이콘을 검색 결과에 저장
         result.markerIcon = marker;
       });
     }
-  }
-
-  Future<BitmapDescriptor> createCustomMarkerBitmap(String title) async {
-    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
-    final Canvas canvas = Canvas(pictureRecorder);
-
-    const double width = 150;
-    const double height = 100;
-
-    CustomMarker(title).paint(canvas, const Size(width, height));
-
-    final ui.Image image = await pictureRecorder.endRecording().toImage(
-          width.toInt(),
-          height.toInt(),
-        );
-    final ByteData? byteData =
-        await image.toByteData(format: ui.ImageByteFormat.png);
-
-    return BitmapDescriptor.fromBytes(byteData!.buffer.asUint8List());
   }
 
   // 특정 위치로 카메라 포지션 이동
@@ -243,11 +230,13 @@ class _MapState extends ConsumerState<_Map> {
     final state = ref.watch(homeProvider);
 
     // 검색 결과가 바뀔 때마다 카메라 이동, 마커 변경
-    ref.listen(homeProvider.select((value) => value.results), (prev, next) async {
+    ref.listen(homeProvider.select((value) => value.results),
+        (prev, next) async {
       if (prev != next && next.isNotEmpty) {
         moveToTargetPosition(
             lat: double.parse(next.first.y), lon: double.parse(next.first.x));
-        await _loadCustomMarkers(next); // 상태 변경 시 마커 업데이트
+
+        await _loadCustomMarkers(next);
       }
     });
 
@@ -266,7 +255,7 @@ class _MapState extends ConsumerState<_Map> {
                     LatLng(double.parse(result.y), double.parse(result.x)),
                 icon: isSelected
                     ? BitmapDescriptor.defaultMarker
-                    : (result.markerIcon ?? BitmapDescriptor.defaultMarker),
+                    : (result.markerIcon ?? _defaultMarker),
                 infoWindow: InfoWindow(title: result.place_name),
                 onTap: () async {
                   ref.read(homeProvider.notifier).tapLocationMarker(result);

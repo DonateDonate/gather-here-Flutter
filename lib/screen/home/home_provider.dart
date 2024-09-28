@@ -1,3 +1,6 @@
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -8,10 +11,12 @@ import 'package:gather_here/common/model/response/search_response_model.dart';
 import 'package:gather_here/common/repository/app_info_repository.dart';
 import 'package:gather_here/common/repository/map_repository.dart';
 import 'package:gather_here/common/repository/room_repository.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 
 import '../../common/model/response/room_response_model.dart';
 import '../../common/storage/storage.dart';
+import 'custom_marker.dart';
 
 class HomeState {
   String? query; // 검색어
@@ -187,5 +192,24 @@ class HomeProvider extends StateNotifier<HomeState> {
   void tapLocationMarker(SearchDocumentsModel model) {
     state.selectedResult = model;
     _setState();
+  }
+
+  Future<BitmapDescriptor> createCustomMarkerBitmap(String label) async {
+    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(pictureRecorder);
+
+    const double width = 150;
+    const double height = 100;
+
+    CustomMarker(label).paint(canvas, const Size(width, height));
+
+    final ui.Image image = await pictureRecorder.endRecording().toImage(
+      width.toInt(),
+      height.toInt(),
+    );
+    final ByteData? byteData =
+    await image.toByteData(format: ui.ImageByteFormat.png);
+
+    return BitmapDescriptor.fromBytes(byteData!.buffer.asUint8List());
   }
 }
