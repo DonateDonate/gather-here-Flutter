@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:easy_debounce/easy_debounce.dart';
@@ -16,7 +17,9 @@ import 'package:gather_here/screen/share/share_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+import '../../common/model/response/search_response_model.dart';
 import '../../common/provider/member_info_provider.dart';
+import 'custom_marker.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   static get name => 'home';
@@ -28,7 +31,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-
   @override
   void initState() {
     super.initState();
@@ -80,7 +82,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ref
                                   .read(homeProvider.notifier)
                                   .inviteCodeChanged(value: text[0]);
-                              final result = await ref.read(homeProvider.notifier).tapInviteButton();
+                              final result = await ref
+                                  .read(homeProvider.notifier)
+                                  .tapInviteButton();
                               if (result != null) {
                                 context.pop();
                                 context.pushNamed(
@@ -130,8 +134,8 @@ class _SearchBarState extends ConsumerState<_SearchBar> {
     return SearchBar(
       backgroundColor: const WidgetStatePropertyAll(AppColor.white),
       hintText: "목적지 검색",
-      leading: Padding(
-        padding: const EdgeInsets.only(left: 8),
+      leading: const Padding(
+        padding: EdgeInsets.only(left: 8),
         child: Icon(
           Icons.search,
           color: AppColor.grey1,
@@ -184,15 +188,9 @@ class _MapState extends ConsumerState<_Map> {
     zoom: 14.4746,
   );
 
-  BitmapDescriptor? _defaultMarker;
-  BitmapDescriptor? _focusedMarker;
-
   @override
   void initState() {
     super.initState();
-    _createMarkerIcons();
-
-    // 현재 위치 가져온 후, 그 위치로 이동
     ref.read(homeProvider.notifier).getCurrentLocation(() {
       final state = ref.read(homeProvider);
 
@@ -202,29 +200,33 @@ class _MapState extends ConsumerState<_Map> {
     });
   }
 
-  Future<void> _createMarkerIcons() async {
-    _defaultMarker = await _createMarkerIcon(Colors.red, 40);
-    _focusedMarker =
-        BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed);
-    setState(() {});
+  Future<void> _loadCustomMarkers(List<SearchDocumentsModel> results) async {
+    for (final result in results) {
+      final marker = await createCustomMarkerBitmap(result.place_name!);
+      setState(() {
+        // 마커 아이콘을 검색 결과에 저장
+        result.markerIcon = marker;
+      });
+    }
   }
 
-  /// PictureRecorder는 그래픽 작업을 기록하는 객체
-  /// 메모리에 그래픽 작업을 저장하여 나중에 이미지로 변환가능
-  /// Canvas를 통해 실제로 그리기 작업을 함
-  /// Paint는 그리기 작업의 스타일을 설정
-  /// drawCircle로 원을 그리고 Offset(size / 2, size / 2)를 하면 원의 중심점을 정의함
-  /// endRecording()으로 그리기 작업을 종료하고 toImage로 이미지로 변환
-  Future<BitmapDescriptor> _createMarkerIcon(Color color, double size) async {
-    final pictureRecorder = ui.PictureRecorder();
-    final canvas = Canvas(pictureRecorder);
-    final paint = Paint()..color = color;
-    canvas.drawCircle(Offset(size / 2, size / 2), size / 2, paint);
-    final img = await pictureRecorder
-        .endRecording()
-        .toImage(size.toInt(), size.toInt());
-    final data = await img.toByteData(format: ui.ImageByteFormat.png);
-    return BitmapDescriptor.fromBytes(data!.buffer.asUint8List());
+  Future<BitmapDescriptor> createCustomMarkerBitmap(String title) async {
+    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(pictureRecorder);
+
+    const double width = 150;
+    const double height = 100;
+
+    CustomMarker(title).paint(canvas, const Size(width, height));
+
+    final ui.Image image = await pictureRecorder.endRecording().toImage(
+          width.toInt(),
+          height.toInt(),
+        );
+    final ByteData? byteData =
+        await image.toByteData(format: ui.ImageByteFormat.png);
+
+    return BitmapDescriptor.fromBytes(byteData!.buffer.asUint8List());
   }
 
   // 특정 위치로 카메라 포지션 이동
@@ -240,11 +242,12 @@ class _MapState extends ConsumerState<_Map> {
   Widget build(BuildContext context) {
     final state = ref.watch(homeProvider);
 
-    // 검색 결과가 바뀔 때마다 카메라 이동
-    ref.listen(homeProvider.select((value) => value.results), (prev, next) {
+    // 검색 결과가 바뀔 때마다 카메라 이동, 마커 변경
+    ref.listen(homeProvider.select((value) => value.results), (prev, next) async {
       if (prev != next && next.isNotEmpty) {
         moveToTargetPosition(
             lat: double.parse(next.first.y), lon: double.parse(next.first.x));
+        await _loadCustomMarkers(next); // 상태 변경 시 마커 업데이트
       }
     });
 
@@ -254,106 +257,110 @@ class _MapState extends ConsumerState<_Map> {
           initialCameraPosition: _defaultPosition,
           myLocationEnabled: true,
           myLocationButtonEnabled: false,
-          markers: state.results.map((result) {
-            final isSelected = result == state.selectedResult;
-            return Marker(
-              markerId: MarkerId('${result.hashCode}'),
-              position: LatLng(double.parse(result.y), double.parse(result.x)),
-              icon: isSelected
-                  ? (_focusedMarker ?? BitmapDescriptor.defaultMarker)
-                  : (_defaultMarker ?? BitmapDescriptor.defaultMarker),
-              onTap: () async {
-                ref.read(homeProvider.notifier).tapLocationMarker(result);
+          markers: state.results.map(
+            (result) {
+              final isSelected = result == state.selectedResult;
+              return Marker(
+                markerId: MarkerId('${result.hashCode}'),
+                position:
+                    LatLng(double.parse(result.y), double.parse(result.x)),
+                icon: isSelected
+                    ? BitmapDescriptor.defaultMarker
+                    : (result.markerIcon ?? BitmapDescriptor.defaultMarker),
+                infoWindow: InfoWindow(title: result.place_name),
+                onTap: () async {
+                  ref.read(homeProvider.notifier).tapLocationMarker(result);
 
-                showModalBottomSheet(
-                  context: context,
-                  // useSafeArea: true,
-                  showDragHandle: true,
-                  // barrierColor: Colors.black.withAlpha(1),
-                  backgroundColor: Colors.white,
-                  builder: (context) {
-                    return SafeArea(
-                      child: Container(
-                        height: 200,
-                        color: Colors.white,
-                        padding: EdgeInsets.fromLTRB(20, 0, 20, 10),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${state.selectedResult?.place_name}',
-                              style: const TextStyle(
-                                  fontSize: 24, fontWeight: FontWeight.w700),
-                            ),
-                            const SizedBox(height: 20),
-                            Text(
-                              '${state.selectedResult?.road_address_name == '' ? '알 수 없는 주소' : state.selectedResult?.road_address_name}',
-                              style: const TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.w400),
-                            ),
-                            const SizedBox(height: 10),
-                            Row(
-                              children: [
-                                const Text(
-                                  '현위치로부터 ',
-                                  style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w400),
-                                ),
-                                Text(
-                                  '${state.selectedResult?.distance}m',
-                                  style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w700),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 15),
-                            Spacer(),
-                            DefaultButton(
-                              title: '목적지로 설정',
-                              height: 40,
-                              onTap: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return DefaultDateDialog(
-                                      destination:
-                                          state.selectedResult!.place_name!,
-                                      // targetDate: homeState.targetDate,
-                                      // targetTime: homeState.targetTime,
-                                      onTab: (dateTime, timeOfDay) async {
-                                        final result = await ref
-                                            .read(homeProvider.notifier)
-                                            .tapStartSharingButton(
-                                              dateTime,
-                                              timeOfDay,
+                  showModalBottomSheet(
+                    context: context,
+                    // useSafeArea: true,
+                    showDragHandle: true,
+                    // barrierColor: Colors.black.withAlpha(1),
+                    backgroundColor: Colors.white,
+                    builder: (context) {
+                      return SafeArea(
+                        child: Container(
+                          height: 200,
+                          color: Colors.white,
+                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${state.selectedResult?.place_name}',
+                                style: const TextStyle(
+                                    fontSize: 24, fontWeight: FontWeight.w700),
+                              ),
+                              const SizedBox(height: 20),
+                              Text(
+                                '${state.selectedResult?.road_address_name == '' ? '알 수 없는 주소' : state.selectedResult?.road_address_name}',
+                                style: const TextStyle(
+                                    fontSize: 20, fontWeight: FontWeight.w400),
+                              ),
+                              const SizedBox(height: 10),
+                              Row(
+                                children: [
+                                  const Text(
+                                    '현위치로부터 ',
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w400),
+                                  ),
+                                  Text(
+                                    '${state.selectedResult?.distance}m',
+                                    style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w700),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 15),
+                              const Spacer(),
+                              DefaultButton(
+                                title: '목적지로 설정',
+                                height: 40,
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return DefaultDateDialog(
+                                        destination:
+                                            state.selectedResult!.place_name!,
+                                        onTab: (dateTime, timeOfDay) async {
+                                          final result = await ref
+                                              .read(homeProvider.notifier)
+                                              .tapStartSharingButton(
+                                                dateTime,
+                                                timeOfDay,
+                                              );
+                                          print(result);
+                                          if (result != null) {
+                                            context.pop();
+                                            context.pop();
+                                            context.pushNamed(
+                                              ShareScreen.name,
+                                              pathParameters: {
+                                                'isHost': 'true'
+                                              },
+                                              extra: result,
                                             );
-                                        print(result);
-                                        if (result != null) {
-                                          context.pop();
-                                          context.pop();
-                                          context.pushNamed(
-                                            ShareScreen.name,
-                                            pathParameters: {'isHost': 'true'},
-                                            extra: result,
-                                          );
-                                        }
-                                      },
-                                    );
-                                  },
-                                );
-                              },
-                            )
-                          ],
+                                          }
+                                        },
+                                      );
+                                    },
+                                  );
+                                },
+                              )
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                );
-              },
-            );
-          }).toSet(),
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          ).toSet(),
           onMapCreated: (controller) {
             _controller.complete(controller);
           },
@@ -365,7 +372,7 @@ class _MapState extends ConsumerState<_Map> {
             onPressed: () {
               ref.read(homeProvider.notifier).getCurrentLocation(() async {
                 final homeState = ref.read(homeProvider);
-                print('현재위치 ${homeState.lat} ${homeState.lon}');
+                debugPrint('현재위치 ${homeState.lat} ${homeState.lon}');
 
                 if (homeState.lat != null && homeState.lon != null) {
                   moveToTargetPosition(
@@ -373,7 +380,7 @@ class _MapState extends ConsumerState<_Map> {
                 }
               });
             },
-            icon: Icon(Icons.my_location),
+            icon: const Icon(Icons.my_location),
           ),
         ),
       ],

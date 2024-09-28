@@ -125,6 +125,7 @@ class _ProfileWidget extends ConsumerWidget {
                           await ref
                               .read(myPageProvider.notifier)
                               .changeNickName(nickName.last);
+                          context.pop();
                         },
                       );
                     },

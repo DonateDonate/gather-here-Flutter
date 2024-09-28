@@ -86,8 +86,12 @@ class MemberInfoProvider extends StateNotifier<MemberInfoState> {
         return false;
       }
     } catch (e) {
-      debugPrint('changeProfileImage Err: $e');
-
+      if (e is DioException) {
+        debugPrint('changeProfileImage Dio Error: ${e.message}');
+        debugPrint('Response: ${e.response?.data}');
+      } else {
+        debugPrint('changeProfileImage Unknown Error: $e');
+      }
       return false;
     }
   }

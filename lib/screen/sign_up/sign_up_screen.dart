@@ -75,11 +75,12 @@ class _TextFields extends ConsumerWidget {
         DefaultTextFormField(
           title: '아이디',
           label: '휴대폰 번호',
+          keyboardType: const TextInputType.numberWithOptions(),
           onChanged: (value) {
             ref.read(signUpProvider.notifier).idValueChanged(value);
           },
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         DefaultTextFormField(
           title: '비밀번호',
           label: '4 ~ 10자',

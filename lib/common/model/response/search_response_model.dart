@@ -1,3 +1,4 @@
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'search_response_model.g.dart';
@@ -26,6 +27,7 @@ class SearchDocumentsModel {
   final String? phone; // 전화번호
   final String x; // 경도
   final String y; // 위도
+  BitmapDescriptor? markerIcon;
 
   SearchDocumentsModel({
     required this.category_group_name,
@@ -37,6 +39,7 @@ class SearchDocumentsModel {
     required this.phone,
     required this.x,
     required this.y,
+    this.markerIcon,
   });
 
   factory SearchDocumentsModel.fromJson(Map<String, dynamic> json) =>
