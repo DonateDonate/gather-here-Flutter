@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ffi';
 
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
@@ -201,7 +202,8 @@ class _MapState extends ConsumerState<_Map> {
   }
 
   Future<void> _setDefaultMarker() async {
-    _defaultMarker = await ref.read(homeProvider.notifier).createCustomMarkerBitmap('');
+    _defaultMarker =
+        await ref.read(homeProvider.notifier).createCustomMarkerBitmap('');
   }
 
   Future<void> _loadCustomMarkers(List<SearchDocumentsModel> results) async {
@@ -237,6 +239,49 @@ class _MapState extends ConsumerState<_Map> {
             lat: double.parse(next.first.y), lon: double.parse(next.first.x));
 
         await _loadCustomMarkers(next);
+
+        showModalBottomSheet(
+          context: context,
+          showDragHandle: true,
+          backgroundColor: Colors.white,
+          isScrollControlled: true,
+          builder: (context) {
+            return SafeArea(
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.4,
+                child: Container(
+                  color: Colors.white,
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                  child: ListView.separated(
+                    itemCount: next.length,
+                    itemBuilder: (context, index) {
+                      final result = next[index];
+                      return InkWell(
+                        onTap: () {
+                          moveToTargetPosition(
+                              lat: double.parse(result.y),
+                              lon: double.parse(result.x));
+                          ref.read(homeProvider.notifier).tapLocationMarker(result);
+                        },
+                        child: ListTile(
+                          title: Text(
+                            result.place_name ?? '',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 18),
+                          ),
+                          subtitle: Text('${result.distance}m'),
+                        ),
+                      );
+                    },
+                    separatorBuilder: (context, index) {
+                      return const Divider();
+                    },
+                  ),
+                ),
+              ),
+            );
+          },
+        );
       }
     });
 
