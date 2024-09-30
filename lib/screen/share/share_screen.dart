@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gather_here/common/components/default_alert_dialog.dart';
 import 'package:gather_here/common/const/colors.dart';
 import 'package:gather_here/common/model/response/room_response_model.dart';
 import 'package:gather_here/common/model/socket_response_model.dart';
@@ -62,7 +63,18 @@ class _ShareScreenState extends ConsumerState<ShareScreen> {
                   alignment: Alignment.topRight,
                   child: IconButton(
                     onPressed: () {
-                      ref.read(shareProvider.notifier).disconnectSocket();
+                      showDialog(
+                        context: context,
+                        builder: (builder) {
+                          return DefaultAlertDialog(
+                            title: '위치공유를 중단할까요?',
+                            content: '다시 방에 참여하기 위해선\n코드를 다시 입력해야합니다',
+                            onTabConfirm: () {
+                              ref.read(shareProvider.notifier).disconnectSocket();
+                            },
+                          );
+                        },
+                      );
                     },
                     style: IconButton.styleFrom(
                       padding: EdgeInsets.zero,
@@ -97,7 +109,8 @@ class _ShareScreenState extends ConsumerState<ShareScreen> {
                       const SizedBox(width: 10),
                       Text(
                         '${Utils.convertToDateFormat(state.remainSeconds)} 남음',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, fontFeatures: [FontFeature.tabularFigures()]),
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.w500, fontFeatures: [FontFeature.tabularFigures()]),
                       ),
                     ]),
                   ),
@@ -178,7 +191,14 @@ class _MapState extends ConsumerState<_Map> {
                   position: LatLng(result.presentLat, result.presentLng),
                 ),
               )
-              .toSet(),
+              .toSet()
+              .union(
+            {
+              Marker(
+                  markerId: MarkerId('${state.roomModel?.destinationName}'),
+                  position: LatLng(state.roomModel?.destinationLat ?? 0, state.roomModel?.destinationLng ?? 0))
+            },
+          ),
         ),
         Align(
           alignment: Alignment.bottomLeft,
@@ -316,7 +336,16 @@ class _MemberRow extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: AppColor.grey1),
               ),
             ],
-          )
+          ),
+          Spacer(),
+          if (member.rank != null)
+            Image.asset(
+              'asset/img/crown.png',
+              width: 30,
+              height: 30,
+              color: member.color,
+              colorBlendMode: BlendMode.modulate,
+            )
         ],
       ),
     );

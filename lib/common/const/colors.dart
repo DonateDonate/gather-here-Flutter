@@ -18,4 +18,8 @@ class AppColor {
   static const grey3 = Color(0xFFE3E8F2);
   static const grey4 = Color(0xFFF7FAFA);
   static const grey5 = Color(0xFFF5F5F5);
+
+  static const gold = Color(0xFFFFD700);
+  static const sliver = Color(0xFFC0C0C0);
+  static const bronze = Color(0xFFCD7F32);
 }

@@ -21,7 +21,6 @@ class ShareState {
   RoomResponseModel? roomModel;
   String? isHost;
   int remainSeconds;
-  bool isTracking;
 
   List<SocketMemberListModel> members;
 
@@ -33,7 +32,6 @@ class ShareState {
     this.isHost,
     required this.members,
     this.remainSeconds = 0,
-    this.isTracking = true,
   });
 }
 
@@ -75,7 +73,6 @@ class ShareProvider extends StateNotifier<ShareState> {
       roomModel: state.roomModel,
       members: state.members,
       remainSeconds: state.remainSeconds,
-      isTracking: state.isTracking,
     );
   }
 
@@ -119,6 +116,12 @@ class ShareProvider extends StateNotifier<ShareState> {
         final results = SocketResponseModel.fromJson(resultMap);
 
         state.members = results.memberLocationResList;
+        state.members.sort((e1, e2) => e1.destinationDistance.compareTo(e2.destinationDistance));
+
+        for (int i = 0; i < state.members.length; i++) {
+          state.members[i].rank = i + 1;
+        }
+
         _setState();
       },
       onDone: () async {

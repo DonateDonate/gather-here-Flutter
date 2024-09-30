@@ -33,6 +33,7 @@ SocketMemberListModel _$SocketMemberListModelFromJson(
       presentLat: (json['presentLat'] as num).toDouble(),
       presentLng: (json['presentLng'] as num).toDouble(),
       destinationDistance: (json['destinationDistance'] as num).toDouble(),
+      rank: (json['rank'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$SocketMemberListModelToJson(
@@ -44,6 +45,7 @@ Map<String, dynamic> _$SocketMemberListModelToJson(
       'presentLat': instance.presentLat,
       'presentLng': instance.presentLng,
       'destinationDistance': instance.destinationDistance,
+      'rank': instance.rank,
     };
 
 SocketScoreModel _$SocketScoreModelFromJson(Map<String, dynamic> json) =>
