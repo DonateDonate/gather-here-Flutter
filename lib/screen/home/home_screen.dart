@@ -87,7 +87,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ref.read(homeProvider.notifier).inviteCodeChanged(value: text[0]);
             final result = await ref.read(homeProvider.notifier).tapInviteButton();
 
-            if (result != null && mounted) {
+            if (result != null) {
               context.pop();
               context.pushNamed(
                 ShareScreen.name,
@@ -121,7 +121,6 @@ class _SearchBarState extends ConsumerState<_SearchBar> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(memberInfoProvider);
     return SearchBar(
       backgroundColor: const WidgetStatePropertyAll(AppColor.white),
       hintText: "목적지 검색",
@@ -138,7 +137,7 @@ class _SearchBarState extends ConsumerState<_SearchBar> {
   }
 
   Widget _leadingIcon() {
-    return Padding(
+    return const Padding(
       padding: EdgeInsets.only(left: 8),
       child: Icon(
         Icons.search,
@@ -172,7 +171,7 @@ class _SearchBarState extends ConsumerState<_SearchBar> {
 
 // Maps
 class _Map extends ConsumerStatefulWidget {
-  const _Map({super.key});
+  const _Map();
 
   @override
   ConsumerState<_Map> createState() => _MapState();
@@ -264,7 +263,6 @@ class _MapState extends ConsumerState<_Map> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(homeProvider);
     _observeLocation(context);
 
     return Stack(
@@ -344,7 +342,6 @@ class _LocationListSheet extends ConsumerWidget {
     required this.locations,
     required this.showSelectedLocation,
     required this.moveToPositionAction,
-    super.key,
   });
 
   @override
@@ -393,7 +390,7 @@ class _LocationListSheet extends ConsumerWidget {
 
 // 장소 선택 됬을때 나오는 BottomSheet
 class _SelectedLocationSheet extends ConsumerWidget {
-  const _SelectedLocationSheet({super.key});
+  const _SelectedLocationSheet();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
