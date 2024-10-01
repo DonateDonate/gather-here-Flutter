@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gather_here/common/model/response/room_response_model.dart';
-import 'package:gather_here/screen/debug/debug_screen.dart';
 import 'package:gather_here/screen/my_page/my_page_screen.dart';
 import 'package:gather_here/screen/share/share_screen.dart';
 import 'package:gather_here/screen/sign_up/sign_up_screen.dart';
@@ -35,11 +34,6 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => SignUpScreen(),
           ),
         ],
-      ),
-      GoRoute(
-        path: '/debug',
-        name: DebugScreen.name,
-        builder: (context, state) => DebugScreen(),
       ),
       GoRoute(path: '/home', name: HomeScreen.name, builder: (context, state) => HomeScreen(), routes: [
         GoRoute(
