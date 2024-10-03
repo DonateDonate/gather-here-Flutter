@@ -3,12 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gather_here/common/provider/provider_observer.dart';
 import 'package:gather_here/common/router/router.dart';
 
-void main() {
+import 'common/background/initialize_service.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeService();
   runApp(
     ProviderScope(observers: [Logger()], child: _App()),
   );
-
-  // runApp(_DesignSystemApp());
 }
 
 class _App extends ConsumerWidget {

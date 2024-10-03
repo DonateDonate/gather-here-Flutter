@@ -17,7 +17,7 @@ import 'package:gather_here/screen/share/socket_manager.dart';
 class ShareState {
   double? myLat; // 위도
   double? myLong; // 경도
-  double? distance; // 경도
+  double? distance; // 거리
   RoomResponseModel? roomModel;
   String? isHost;
   int remainSeconds;
@@ -62,7 +62,7 @@ class ShareProvider extends StateNotifier<ShareState> {
     required this.socketManager,
     required this.locationManager,
     required this.router,
-  }) : super(ShareState(members: [])) {}
+  }) : super(ShareState(members: []));
 
   void _setState() {
     state = ShareState(

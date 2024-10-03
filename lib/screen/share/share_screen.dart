@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gather_here/common/components/default_alert_dialog.dart';
 import 'package:gather_here/common/const/colors.dart';
@@ -9,7 +9,6 @@ import 'package:gather_here/common/model/response/room_response_model.dart';
 import 'package:gather_here/common/model/socket_response_model.dart';
 import 'package:gather_here/common/utils/utils.dart';
 import 'package:gather_here/screen/share/share_provider.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class ShareScreen extends ConsumerStatefulWidget {
@@ -83,14 +82,14 @@ class _ShareScreenState extends ConsumerState<ShareScreen> {
                     ),
                     icon: Container(
                       height: 50,
-                      padding: EdgeInsets.all(10.0),
-                      child: Icon(
-                        Icons.exit_to_app,
-                        size: 30,
-                      ),
-                      decoration: BoxDecoration(
+                      padding: const EdgeInsets.all(10.0),
+                      decoration: const BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.exit_to_app,
+                        size: 30,
                       ),
                     ),
                   ),
@@ -103,20 +102,20 @@ class _ShareScreenState extends ConsumerState<ShareScreen> {
                 child: Container(
                   height: 50,
                   padding: const EdgeInsets.all(10),
-                  child: IntrinsicWidth(
-                    child: Row(children: [
-                      Icon(Icons.timelapse_outlined, color: AppColor.main),
-                      const SizedBox(width: 10),
-                      Text(
-                        '${Utils.convertToDateFormat(state.remainSeconds)} 남음',
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.w500, fontFeatures: [FontFeature.tabularFigures()]),
-                      ),
-                    ]),
-                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(25),
+                  ),
+                  child: IntrinsicWidth(
+                    child: Row(children: [
+                      const Icon(Icons.timelapse_outlined, color: AppColor.main),
+                      const SizedBox(width: 10),
+                      Text(
+                        '${Utils.convertToDateFormat(state.remainSeconds)} 남음',
+                        style: const TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.w500, fontFeatures: [FontFeature.tabularFigures()]),
+                      ),
+                    ]),
                   ),
                 ),
               ),
@@ -208,7 +207,7 @@ class _MapState extends ConsumerState<_Map> {
                 moveToTargetPosition(lat: state.myLat!, lon: state.myLong!);
               }
             },
-            icon: Icon(Icons.my_location),
+            icon: const Icon(Icons.my_location),
           ),
         )
       ],
@@ -235,14 +234,14 @@ class _BottomSheetState extends ConsumerState<_BottomSheet> {
       builder: (BuildContext context, scrollController) {
         return Container(
           clipBehavior: Clip.hardEdge,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(25),
               topRight: Radius.circular(25),
             ),
           ),
-          padding: EdgeInsets.all(20),
+          padding: const EdgeInsets.all(20),
           child: CustomScrollView(
             controller: scrollController,
             slivers: [
@@ -256,30 +255,30 @@ class _BottomSheetState extends ConsumerState<_BottomSheet> {
                         if (state.roomModel?.encounterDate != null)
                           Text(
                             Utils.makeMeetingHeaderLabel(DateTime.parse(state.roomModel!.encounterDate!)),
-                            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 20, height: 1),
+                            style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 20, height: 1),
                             maxLines: 2,
                           ),
                         const SizedBox(height: 5),
                         Text(
                           '${state.roomModel?.destinationName}',
-                          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 24, height: 1),
+                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 24, height: 1),
                         ),
                       ],
                     ),
-                    Spacer(),
+                    const Spacer(),
                     TextButton.icon(
                       style: TextButton.styleFrom(
                           foregroundColor: AppColor.blue,
                           padding: EdgeInsets.zero,
                           minimumSize: Size.zero,
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          textStyle: TextStyle(
+                          textStyle: const TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 20,
                           )),
                       iconAlignment: IconAlignment.end,
                       label: Text('${state.roomModel?.shareCode}'),
-                      icon: Icon(Icons.content_copy),
+                      icon: const Icon(Icons.content_copy),
                       onPressed: () {
                         if (state.roomModel?.shareCode != null) {
                           Clipboard.setData(ClipboardData(text: state.roomModel!.shareCode!));
@@ -328,16 +327,16 @@ class _MemberRow extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '${member.nickname}',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                member.nickname,
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
               ),
               Text(
                 '${member.destinationDistance}m 남음',
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: AppColor.grey1),
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: AppColor.grey1),
               ),
             ],
           ),
-          Spacer(),
+          const Spacer(),
           if (member.rank != null)
             Image.asset(
               'asset/img/crown.png',
