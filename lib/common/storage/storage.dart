@@ -14,4 +14,6 @@ enum StorageKey {
   accessToken,
   refreshToken,
   appInfo,
+  destinationLat,
+  destinationLng,
 }

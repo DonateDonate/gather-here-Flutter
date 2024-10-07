@@ -90,7 +90,12 @@ class HomeProvider extends StateNotifier<HomeState> {
 
   // 홈화면 들어왔을때 room 정보조회
   Future<RoomResponseModel> getRoomInfo() async {
-    return await roomRepo.getRoom();
+    final result = await roomRepo.getRoom();
+    saveDestinationLatLng(
+      result.destinationLat ?? 0.0,
+      result.destinationLng ?? 0.0,
+    );
+    return result;
   }
 
   void inviteCodeChanged({required String value}) {
@@ -105,7 +110,12 @@ class HomeProvider extends StateNotifier<HomeState> {
 
     try {
       final result = await roomRepo.postJoinRoom(
-          body: RoomJoinModel(shareCode: state.inviteCode!));
+        body: RoomJoinModel(shareCode: state.inviteCode!),
+      );
+      saveDestinationLatLng(
+        result.destinationLat ?? 0.0,
+        result.destinationLng ?? 0.0,
+      );
       return result;
     } catch (err) {
       print('${err.toString()}');
@@ -148,6 +158,10 @@ class HomeProvider extends StateNotifier<HomeState> {
             destinationName: state.selectedResult?.place_name ?? "",
             encounterDate: encounterDate,
           ),
+        );
+        saveDestinationLatLng(
+          double.parse(state.selectedResult!.y),
+          double.parse(state.selectedResult!.x),
         );
         print(result.toString());
         return result;
@@ -204,12 +218,23 @@ class HomeProvider extends StateNotifier<HomeState> {
     CustomMarker(label).paint(canvas, const Size(width, height));
 
     final ui.Image image = await pictureRecorder.endRecording().toImage(
-      width.toInt(),
-      height.toInt(),
-    );
+          width.toInt(),
+          height.toInt(),
+        );
     final ByteData? byteData =
-    await image.toByteData(format: ui.ImageByteFormat.png);
+        await image.toByteData(format: ui.ImageByteFormat.png);
 
     return BitmapDescriptor.fromBytes(byteData!.buffer.asUint8List());
+  }
+
+  void saveDestinationLatLng(double destinationLat, double destinationLng) {
+    storage.write(
+      key: StorageKey.destinationLat.name,
+      value: destinationLat.toString(),
+    );
+    storage.write(
+      key: StorageKey.destinationLng.name,
+      value: destinationLng.toString(),
+    );
   }
 }

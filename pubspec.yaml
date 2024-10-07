@@ -26,6 +26,7 @@ dependencies:
   intl: ^0.18.0
   flutter_background_service: ^5.0.10
   flutter_local_notifications: ^17.2.3
+  permission_handler: ^11.3.0
 
 dev_dependencies:
   flutter_test:

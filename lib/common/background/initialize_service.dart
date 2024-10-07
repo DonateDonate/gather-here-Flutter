@@ -3,38 +3,61 @@ import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:gather_here/common/location/location_manager.dart';
 import 'package:gather_here/common/model/socket_model.dart';
+import 'package:gather_here/common/storage/storage.dart';
 import 'package:gather_here/screen/share/socket_manager.dart';
 
-late SocketManager _socketManager;
-late LocationManager _locationManager;
+const notificationChannelId = 'my_foreground';
+
+const notificationId = 888;
+
+void startBackgroundService() {
+  final service = FlutterBackgroundService();
+  service.startService();
+}
+
+void stopBackgroundService() {
+  final service = FlutterBackgroundService();
+  service.invoke("stopService");
+}
 
 Future<void> initializeService() async {
   final service = FlutterBackgroundService();
-  final storage = FlutterSecureStorage();
-  _socketManager = SocketManager(storage: storage);
-  _locationManager = LocationManager();
+
+  const AndroidNotificationChannel channel = AndroidNotificationChannel(
+    notificationChannelId,
+    'MY FOREGROUND SERVICE',
+    description: 'This channel is used for important notifications.',
+    importance: Importance.low,
+  );
+
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(channel);
 
   await service.configure(
+    androidConfiguration: AndroidConfiguration(
+      onStart: onStart,
+      autoStart: false,
+      isForegroundMode: true,
+      notificationChannelId: notificationChannelId,
+      initialNotificationTitle: 'AWESOME SERVICE',
+      initialNotificationContent: 'Initializing',
+      foregroundServiceNotificationId: notificationId,
+    ),
     iosConfiguration: IosConfiguration(
-      autoStart: true,
+      autoStart: false,
       onForeground: onStart,
       onBackground: onIosBackground,
     ),
-    androidConfiguration: AndroidConfiguration(
-      onStart: onStart,
-      autoStart: true,
-      isForegroundMode: true,
-      notificationChannelId: 'my_foreground',
-      initialNotificationTitle: '위치 공유 중',
-      initialNotificationContent: '백그라운드에서 위치를 공유하고 있습니다',
-      foregroundServiceNotificationId: 888,
-    ),
   );
-
-  await service.startService();
 }
 
 @pragma('vm:entry-point')
@@ -48,51 +71,72 @@ Future<bool> onIosBackground(ServiceInstance service) async {
 void onStart(ServiceInstance service) async {
   DartPluginRegistrant.ensureInitialized();
 
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  final locationManager = LocationManager();
+  final storage = FlutterSecureStorage();
+  final socketManager = SocketManager();
+  socketManager.initialize(storage);
+
+  final destinationLat = await storage.read(key: StorageKey.destinationLat.name);
+  final destinationLng = await storage.read(key: StorageKey.destinationLng.name);
+
+  try {
+    await socketManager.connect();
+  } catch (e) {
+    debugPrint('소켓 연결 실vo: $e');
+  }
+
   if (service is AndroidServiceInstance) {
     service.on('setAsForeground').listen((event) {
-      print('setAsForeground');
       service.setAsForegroundService();
     });
 
     service.on('setAsBackground').listen((event) {
-      print('setAsBackground');
       service.setAsBackgroundService();
     });
   }
 
   service.on('stopService').listen((event) {
-    print('stopService');
-    _socketManager.close();
     service.stopSelf();
   });
-
-  await _socketManager.connect();
 
   Timer.periodic(const Duration(seconds: 5), (timer) async {
     if (service is AndroidServiceInstance) {
       if (await service.isForegroundService()) {
-        service.setForegroundNotificationInfo(
-          title: '위치 공유 중',
-          content: '백그라운드에서 위치를 공유하고 있습니다.',
+        flutterLocalNotificationsPlugin.show(
+          notificationId,
+          '위치 공유 중입니다.',
+          '',
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              notificationChannelId,
+              'MY FOREGROUND SERVICE',
+              // 아이콘 추후 수정
+              icon: 'ic_bg_service_small',
+              ongoing: true,
+            ),
+          ),
         );
+
       }
     }
-
-    final position = await _locationManager.getCurrentPosition();
-    final socketModel = SocketModel(
-      type: 2,
-      presentLat: position.latitude,
-      presentLng: position.longitude,
-      destinationDistance: 0,
+    final position = await locationManager.getCurrentPosition();
+    final distance = locationManager.calculateDistance(
+      position.latitude,
+      position.longitude,
+      double.parse(destinationLat!),
+      double.parse(destinationLng!),
     );
-    _socketManager.deliveryMyInfo(socketModel);
-
-    service.invoke(
-      'update',
-      {
-        'latitude': position.latitude,
-        'longitude': position.longitude,
-      },
+    debugPrint('Background service running: latitude ${position.latitude}, longitude ${position.longitude}, distance $distance');
+    socketManager.deliveryMyInfo(
+      SocketModel(
+        type: 2,
+        presentLat: position.latitude,
+        presentLng: position.longitude,
+        destinationDistance: distance,
+      ),
     );
   });
 }
