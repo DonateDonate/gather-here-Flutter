@@ -84,8 +84,18 @@ void onStart(ServiceInstance service) async {
 
   try {
     await socketManager.connect();
+    socketManager.observeConnection().listen(
+          (message) {
+        debugPrint('callback: $message');
+      },
+      onError: (error) {
+        debugPrint('소켓 에러 발생: $error');
+        // 재연결 시도
+        socketManager.connect();
+      },
+    );
   } catch (e) {
-    debugPrint('소켓 연결 실vo: $e');
+    debugPrint('소켓 연결 실패: $e');
   }
 
   if (service is AndroidServiceInstance) {
