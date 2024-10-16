@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:easy_debounce/easy_debounce.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -11,6 +13,7 @@ import 'package:gather_here/common/model/socket_response_model.dart';
 import 'package:gather_here/common/utils/utils.dart';
 import 'package:gather_here/screen/share/share_provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:easy_debounce/easy_throttle.dart';
 
 import '../../common/background/initialize_service.dart';
 
@@ -29,9 +32,9 @@ class ShareScreen extends ConsumerStatefulWidget {
   ConsumerState<ShareScreen> createState() => _ShareScreenState();
 }
 
-class _ShareScreenState extends ConsumerState<ShareScreen>
-    with WidgetsBindingObserver {
+class _ShareScreenState extends ConsumerState<ShareScreen> with WidgetsBindingObserver {
   late final Timer _timer;
+  final GlobalKey<_MapState> _mapKey = GlobalKey<_MapState>();
 
   @override
   void initState() {
@@ -54,8 +57,7 @@ class _ShareScreenState extends ConsumerState<ShareScreen>
     if (!mounted) return;
     final service = FlutterBackgroundService();
     final isRunning = await service.isRunning();
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
       if (!isRunning) {
         startBackgroundService();
       }
@@ -75,8 +77,8 @@ class _ShareScreenState extends ConsumerState<ShareScreen>
       child: Scaffold(
         body: Stack(
           children: [
-            _Map(isHost: widget.isHost, roomModel: widget.roomModel),
-            _BottomSheet(),
+            _Map(isHost: widget.isHost, roomModel: widget.roomModel, key: _mapKey),
+            _BottomSheet(floatingAction: _mapKey.currentState?._moveToTargetPosition),
             _backButton(),
             _timerHeader(),
           ],
@@ -180,8 +182,7 @@ class _Map extends ConsumerStatefulWidget {
 }
 
 class _MapState extends ConsumerState<_Map> {
-  final Completer<GoogleMapController> _controller =
-      Completer<GoogleMapController>();
+  final Completer<GoogleMapController> _controller = Completer<GoogleMapController>();
 
   static const CameraPosition _defaultPosition = CameraPosition(
     target: LatLng(37.5642135, 127.0016985),
@@ -194,10 +195,14 @@ class _MapState extends ConsumerState<_Map> {
     _setup();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    EasyThrottle.cancel('refresh');
+  }
+
   void _setup() async {
-    await ref
-        .read(shareProvider.notifier)
-        .setInitState(widget.isHost, widget.roomModel);
+    await ref.read(shareProvider.notifier).setInitState(widget.isHost, widget.roomModel);
     await ref.read(shareProvider.notifier).connectSocket();
     ref.read(shareProvider.notifier).observeMyLocation((lat, lon) {
       _moveToTargetPosition(lat: lat, lon: lon);
@@ -220,7 +225,7 @@ class _MapState extends ConsumerState<_Map> {
     return Stack(
       children: [
         _googleMap(),
-        _myLocationButton(),
+        _refreshButton(),
       ],
     );
   }
@@ -246,7 +251,7 @@ class _MapState extends ConsumerState<_Map> {
     );
   }
 
-  Widget _myLocationButton() {
+  Widget _refreshButton() {
     final state = ref.watch(shareProvider);
 
     return Padding(
@@ -256,11 +261,10 @@ class _MapState extends ConsumerState<_Map> {
           alignment: Alignment.topRight,
           child: IconButton(
             onPressed: () {
-              Utils.showSnackBar(context, '내 위치 추적모드 ${state.isTracking ? 'off' : 'on'}');
-              ref.read(shareProvider.notifier).toggleTrackingButton();
-              if (state.myLat != null && state.myLong != null) {
-                _moveToTargetPosition(lat: state.myLat!, lon: state.myLong!);
-              }
+              EasyThrottle.throttle('refresh', Duration(seconds: 5), () {
+                ref.read(shareProvider.notifier).deliveryMyInfo(2);
+                Utils.showSnackBar(context, '화면을 새로고침 했어요');
+              });
             },
             style: IconButton.styleFrom(
               padding: EdgeInsets.zero,
@@ -270,7 +274,7 @@ class _MapState extends ConsumerState<_Map> {
             icon: Container(
               height: 50,
               padding: EdgeInsets.all(10.0),
-              child: Icon(Icons.my_location, size: 30, color: state.isTracking ? AppColor.main : AppColor.black1),
+              child: Icon(Icons.refresh, size: 30),
               decoration: BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
@@ -284,45 +288,83 @@ class _MapState extends ConsumerState<_Map> {
 }
 
 class _BottomSheet extends ConsumerStatefulWidget {
-  const _BottomSheet({super.key});
+  final void Function({required double lat, required double lon})? floatingAction;
+  const _BottomSheet({required this.floatingAction, super.key});
 
   @override
   ConsumerState<_BottomSheet> createState() => _BottomSheetState();
 }
 
 class _BottomSheetState extends ConsumerState<_BottomSheet> {
+  late final DraggableScrollableController _scrollableController;
+  double _currentSheetHeight = 80;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollableController = DraggableScrollableController();
+    _scrollableController.addListener((){
+      setState(() {
+        _currentSheetHeight = _scrollableController.size * MediaQuery.of(context).size.height;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(shareProvider);
 
-    return DraggableScrollableSheet(
-      initialChildSize: 0.1,
-      minChildSize: 0.1,
-      maxChildSize: 0.5,
-      builder: (BuildContext context, scrollController) {
-        return Container(
-          clipBehavior: Clip.hardEdge,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(25),
-              topRight: Radius.circular(25),
-            ),
+    return Stack(
+      children: [
+        DraggableScrollableSheet(
+          initialChildSize: 0.1,
+          minChildSize: 0.1,
+          maxChildSize: 0.5,
+          controller: _scrollableController,
+          builder: (BuildContext context, scrollController) {
+            return Container(
+              clipBehavior: Clip.hardEdge,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(25),
+                  topRight: Radius.circular(25),
+                ),
+              ),
+              padding: const EdgeInsets.all(20),
+              child: CustomScrollView(
+                controller: scrollController,
+                slivers: [
+                  SliverToBoxAdapter(child: _destinationHeader()),
+                  SliverList.list(
+                    children: state.members.map((member) => _MemberRow(member: member)).toList(),
+                  )
+                ],
+              ),
+            );
+          },
+        ),
+        AnimatedPositioned(
+          duration: Duration(milliseconds: 10),  // Smooth animation duration
+          top: MediaQuery.of(context).size.height - _currentSheetHeight - 80,
+          right: 10,
+          child: FloatingActionButton.small(
+            onPressed: () {
+              Utils.showSnackBar(context, '내 위치 추적모드 ${state.isTracking ? 'off' : 'on'}', durationSeconds: 1);
+              ref.read(shareProvider.notifier).toggleTrackingButton();
+              if (state.myLat != null && state.myLong != null) {
+                widget.floatingAction?.call(lat: state.myLat!, lon: state.myLong!);
+              }
+              // Button action
+            },
+            child: Icon(Icons.my_location),
+            shape: CircleBorder(),
+            splashColor: AppColor.grey3,
+            foregroundColor: state.isTracking ? AppColor.main : AppColor.black1,
+            backgroundColor: AppColor.white,
           ),
-          padding: const EdgeInsets.all(20),
-          child: CustomScrollView(
-            controller: scrollController,
-            slivers: [
-              SliverToBoxAdapter(child: _destinationHeader()),
-              SliverList.list(
-                children: state.members
-                    .map((member) => _MemberRow(member: member))
-                    .toList(),
-              )
-            ],
-          ),
-        );
-      },
+        )
+      ],
     );
   }
 
@@ -393,8 +435,7 @@ class _MemberRow extends StatelessWidget {
         children: [
           if (member.imageUrl != "")
             ClipOval(
-              child: Image.network(member.imageUrl ?? '',
-                  width: 60, height: 60, fit: BoxFit.cover),
+              child: Image.network(member.imageUrl ?? '', width: 60, height: 60, fit: BoxFit.cover),
             ),
           if (member.imageUrl == "")
             const Icon(
@@ -407,15 +448,11 @@ class _MemberRow extends StatelessWidget {
             children: [
               Text(
                 member.nickname,
-                style:
-                    const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
               ),
               Text(
                 '${member.destinationDistance}m 남음',
-                style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                    color: AppColor.grey1),
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: AppColor.grey1),
               ),
             ],
           ),
