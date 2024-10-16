@@ -316,55 +316,67 @@ class _BottomSheetState extends ConsumerState<_BottomSheet> {
 
     return Stack(
       children: [
-        DraggableScrollableSheet(
-          initialChildSize: 0.1,
-          minChildSize: 0.1,
-          maxChildSize: 0.5,
-          controller: _scrollableController,
-          builder: (BuildContext context, scrollController) {
-            return Container(
-              clipBehavior: Clip.hardEdge,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(25),
-                  topRight: Radius.circular(25),
-                ),
-              ),
-              padding: const EdgeInsets.all(20),
-              child: CustomScrollView(
-                controller: scrollController,
-                slivers: [
-                  SliverToBoxAdapter(child: _destinationHeader()),
-                  SliverList.list(
-                    children: state.members.map((member) => _MemberRow(member: member)).toList(),
-                  )
-                ],
-              ),
-            );
-          },
-        ),
-        AnimatedPositioned(
-          duration: Duration(milliseconds: 10),  // Smooth animation duration
-          top: MediaQuery.of(context).size.height - _currentSheetHeight - 80,
-          right: 10,
-          child: FloatingActionButton.small(
-            onPressed: () {
-              Utils.showSnackBar(context, '내 위치 추적모드 ${state.isTracking ? 'off' : 'on'}', durationSeconds: 1);
-              ref.read(shareProvider.notifier).toggleTrackingButton();
-              if (state.myLat != null && state.myLong != null) {
-                widget.floatingAction?.call(lat: state.myLat!, lon: state.myLong!);
-              }
-              // Button action
-            },
-            child: Icon(Icons.my_location),
-            shape: CircleBorder(),
-            splashColor: AppColor.grey3,
-            foregroundColor: state.isTracking ? AppColor.main : AppColor.black1,
-            backgroundColor: AppColor.white,
-          ),
-        )
+        _memberListSheet(),
+        _myLocationButton(),
       ],
+    );
+  }
+
+  Widget _memberListSheet() {
+    final state = ref.watch(shareProvider);
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.1,
+      minChildSize: 0.1,
+      maxChildSize: 0.5,
+      controller: _scrollableController,
+      builder: (BuildContext context, scrollController) {
+        return Container(
+          clipBehavior: Clip.hardEdge,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(25),
+              topRight: Radius.circular(25),
+            ),
+          ),
+          padding: const EdgeInsets.all(20),
+          child: CustomScrollView(
+            controller: scrollController,
+            slivers: [
+              SliverToBoxAdapter(child: _destinationHeader()),
+              SliverList.list(
+                children: state.members.map((member) => _MemberRow(member: member)).toList(),
+              )
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _myLocationButton() {
+    final state = ref.watch(shareProvider);
+
+    return AnimatedPositioned(
+      duration: Duration(milliseconds: 10),  // Smooth animation duration
+      top: MediaQuery.of(context).size.height - _currentSheetHeight - 80,
+      right: 10,
+      child: FloatingActionButton.small(
+        onPressed: () {
+          Utils.showSnackBar(context, '내 위치 추적모드 ${state.isTracking ? 'off' : 'on'}', durationSeconds: 1);
+          ref.read(shareProvider.notifier).toggleTrackingButton();
+          if (state.myLat != null && state.myLong != null) {
+            widget.floatingAction?.call(lat: state.myLat!, lon: state.myLong!);
+          }
+          // Button action
+        },
+        child: Icon(Icons.my_location),
+        shape: CircleBorder(),
+        splashColor: AppColor.grey3,
+        foregroundColor: state.isTracking ? AppColor.main : AppColor.black1,
+        backgroundColor: AppColor.white,
+      ),
     );
   }
 
