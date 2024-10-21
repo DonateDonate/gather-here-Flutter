@@ -9,15 +9,19 @@ import 'package:gather_here/common/repository/member_repository.dart';
 
 import '../const/const.dart';
 import '../dio/dio.dart';
+import '../model/request/password_model.dart';
 import '../model/response/profile_image_url_model.dart';
+import '../utils/utils.dart';
 
 class MemberInfoState {
   MemberInfoModel? memberInfoModel;
   String? message;
+  bool isLoading;
 
   MemberInfoState({
     this.memberInfoModel,
     this.message,
+    this.isLoading = false,
   });
 }
 
@@ -45,9 +49,11 @@ class MemberInfoProvider extends StateNotifier<MemberInfoState> {
   }
 
   void _setState() async {
-    state = MemberInfoState(memberInfoModel: state.memberInfoModel, message: state.message);
-    await Future.delayed(Duration(seconds: 1));
-    state = MemberInfoState(memberInfoModel: state.memberInfoModel, message: null);
+    state = MemberInfoState(
+        memberInfoModel: state.memberInfoModel, message: state.message, isLoading: state.isLoading);
+    await Future.delayed(const Duration(seconds: 1));
+    state =
+        MemberInfoState(memberInfoModel: state.memberInfoModel, message: null, isLoading: state.isLoading);
   }
 
   Future<void> getMyInfo() async {
@@ -66,11 +72,38 @@ class MemberInfoProvider extends StateNotifier<MemberInfoState> {
         body: NicknameModel(nickname: nickName),
       );
       state.message = '닉네임 변경에 성공하였습니다';
+      // _setState();
       getMyInfo();
     } catch (e) {
+      debugPrint('changeNickName Err: $e');
       state.message = '닉네임 변경에 실패하였습니다.';
       _setState();
     }
+  }
+
+  Future<void> changePassWord(String passWord) async {
+    try {
+      await memberRepository.patchChangePassWord(
+        body: PasswordModel(password: passWord),
+      );
+      state.message = '비밀번호가 변경되었습니다.';
+      _setState();
+    } catch (e) {
+      debugPrint('changePassWord Err: $e');
+      state.message = '비밀번호 변경에 실패하였습니다.';
+      _setState();
+    }
+  }
+
+  void compressedFile(File imageFile) async {
+    // setProgressIndicator(true);
+
+    final beforeCompressed = await imageFile.length();
+    final compressedFile = await Utils.compressImage(imageFile);
+    final afterCompressed = await compressedFile.length();
+    print('압축 전: ${beforeCompressed}\n압축 후: ${afterCompressed}');
+
+    changeProfileImage(compressedFile);
   }
 
   void changeProfileImage(File imageFile) async {
@@ -101,7 +134,8 @@ class MemberInfoProvider extends StateNotifier<MemberInfoState> {
             ProfileImageUrlModel.fromJson(response.data);
 
         state.message = '프로필 사진이 업데이트 되었습니다.';
-        state.memberInfoModel = state.memberInfoModel?.copyWith(profileImageUrl: profileImageUrlModel.imageUrl);
+        state.memberInfoModel = state.memberInfoModel
+            ?.copyWith(profileImageUrl: profileImageUrlModel.imageUrl);
         _setState();
       } else {
         debugPrint('Server responded with status code: ${response.statusCode}');
@@ -119,5 +153,11 @@ class MemberInfoProvider extends StateNotifier<MemberInfoState> {
         debugPrint('changeProfileImage Unknown Error: $e');
       }
     }
+    // setProgressIndicator(false);
+  }
+
+   Future<void> setProgressIndicator(bool visible) async {
+    state.isLoading = visible;
+    _setState();
   }
 }

@@ -70,7 +70,7 @@ class ShareProvider extends StateNotifier<ShareState> {
     required this.socketManager,
     required this.locationManager,
     required this.router,
-  }) : super(ShareState(members: [], markers: [], isTracking: true)) {}
+  }) : super(ShareState(members: [], markers: [], isTracking: true));
 
   void _setState() {
     state = ShareState(
@@ -134,6 +134,7 @@ class ShareProvider extends StateNotifier<ShareState> {
                 id: result.memberSeq.toString(),
                 url: result.imageUrl == "" ? 'http://www.gravatar.com/avatar/?d=mp' : result.imageUrl,
                 position: LatLng(result.presentLat, result.presentLng),
+                nickname: result.nickname,
                 width: 100,
               );
               return marker;

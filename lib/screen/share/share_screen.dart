@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -31,7 +32,8 @@ class ShareScreen extends ConsumerStatefulWidget {
   ConsumerState<ShareScreen> createState() => _ShareScreenState();
 }
 
-class _ShareScreenState extends ConsumerState<ShareScreen> with WidgetsBindingObserver {
+class _ShareScreenState extends ConsumerState<ShareScreen>
+    with WidgetsBindingObserver {
   late final Timer _timer;
   final GlobalKey<_MapState> _mapKey = GlobalKey<_MapState>();
 
@@ -56,7 +58,8 @@ class _ShareScreenState extends ConsumerState<ShareScreen> with WidgetsBindingOb
     if (!mounted) return;
     final service = FlutterBackgroundService();
     final isRunning = await service.isRunning();
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
       if (!isRunning) {
         ref.read(shareProvider.notifier).disconnectOnlySocket();
         startBackgroundService();
@@ -71,15 +74,17 @@ class _ShareScreenState extends ConsumerState<ShareScreen> with WidgetsBindingOb
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(shareProvider);
-
     return PopScope(
       canPop: false,
       child: Scaffold(
         body: Stack(
           children: [
-            _Map(isHost: widget.isHost, roomModel: widget.roomModel, key: _mapKey),
-            _BottomSheet(floatingAction: _mapKey.currentState?._moveToTargetPosition),
+            _Map(
+                isHost: widget.isHost,
+                roomModel: widget.roomModel,
+                key: _mapKey),
+            _BottomSheet(
+                floatingAction: _mapKey.currentState?._moveToTargetPosition),
             _backButton(),
             _timerHeader(),
           ],
@@ -141,10 +146,14 @@ class _ShareScreenState extends ConsumerState<ShareScreen> with WidgetsBindingOb
         child: Container(
           height: 50,
           padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(25),
+          ),
           child: IntrinsicWidth(
             child: Row(
               children: [
-                Icon(Icons.timelapse_outlined, color: AppColor.black1),
+                const Icon(Icons.timelapse_outlined, color: AppColor.black1),
                 const SizedBox(width: 10),
                 Text(
                   '${Utils.convertToDateFormat(state.remainSeconds)} 남음',
@@ -152,15 +161,13 @@ class _ShareScreenState extends ConsumerState<ShareScreen> with WidgetsBindingOb
                     fontSize: 20,
                     fontWeight: FontWeight.w500,
                     fontFeatures: [FontFeature.tabularFigures()],
-                    color: state.remainSeconds <= 60 ? AppColor.red : AppColor.black1,
+                    color: state.remainSeconds <= 60
+                        ? AppColor.red
+                        : AppColor.black1,
                   ),
                 ),
               ],
             ),
-          ),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(25),
           ),
         ),
       ),
@@ -183,7 +190,8 @@ class _Map extends ConsumerStatefulWidget {
 }
 
 class _MapState extends ConsumerState<_Map> {
-  final Completer<GoogleMapController> _controller = Completer<GoogleMapController>();
+  final Completer<GoogleMapController> _controller =
+      Completer<GoogleMapController>();
 
   static const CameraPosition _defaultPosition = CameraPosition(
     target: LatLng(37.5642135, 127.0016985),
@@ -203,7 +211,9 @@ class _MapState extends ConsumerState<_Map> {
   }
 
   void _setup() async {
-    await ref.read(shareProvider.notifier).setInitState(widget.isHost, widget.roomModel);
+    await ref
+        .read(shareProvider.notifier)
+        .setInitState(widget.isHost, widget.roomModel);
     final isHost = ref.read(shareProvider).isHost == 'true';
     await ref.read(shareProvider.notifier).connectSocket(type: isHost ? 0 : 1);
     ref.read(shareProvider.notifier).observeMyLocation((lat, lon) {
@@ -246,7 +256,8 @@ class _MapState extends ConsumerState<_Map> {
       markers: state.markers.whereType<Marker>().toSet().union({
         Marker(
           markerId: MarkerId('${state.roomModel?.destinationName}'),
-          position: LatLng(state.roomModel?.destinationLat ?? 0, state.roomModel?.destinationLng ?? 0),
+          position: LatLng(state.roomModel?.destinationLat ?? 0,
+              state.roomModel?.destinationLng ?? 0),
           infoWindow: InfoWindow(title: '${state.roomModel?.destinationName}'),
         )
       }),
@@ -263,7 +274,7 @@ class _MapState extends ConsumerState<_Map> {
           alignment: Alignment.topRight,
           child: IconButton(
             onPressed: () {
-              EasyThrottle.throttle('refresh', Duration(seconds: 5), () {
+              EasyThrottle.throttle('refresh', const Duration(seconds: 5), () {
                 ref.read(shareProvider.notifier).deliveryMyInfo(2);
                 Utils.showSnackBar(context, '화면을 새로고침 했어요');
               });
@@ -275,12 +286,12 @@ class _MapState extends ConsumerState<_Map> {
             ),
             icon: Container(
               height: 50,
-              padding: EdgeInsets.all(10.0),
-              child: Icon(Icons.refresh, size: 30),
-              decoration: BoxDecoration(
+              padding: const EdgeInsets.all(10.0),
+              decoration: const BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
               ),
+              child: const Icon(Icons.refresh, size: 30),
             ),
           ),
         ),
@@ -290,7 +301,9 @@ class _MapState extends ConsumerState<_Map> {
 }
 
 class _BottomSheet extends ConsumerStatefulWidget {
-  final void Function({required double lat, required double lon})? floatingAction;
+  final void Function({required double lat, required double lon})?
+      floatingAction;
+
   const _BottomSheet({required this.floatingAction, super.key});
 
   @override
@@ -305,9 +318,10 @@ class _BottomSheetState extends ConsumerState<_BottomSheet> {
   void initState() {
     super.initState();
     _scrollableController = DraggableScrollableController();
-    _scrollableController.addListener((){
+    _scrollableController.addListener(() {
       setState(() {
-        _currentSheetHeight = _scrollableController.size * MediaQuery.of(context).size.height;
+        _currentSheetHeight =
+            _scrollableController.size * MediaQuery.of(context).size.height;
       });
     });
   }
@@ -348,7 +362,9 @@ class _BottomSheetState extends ConsumerState<_BottomSheet> {
             slivers: [
               SliverToBoxAdapter(child: _destinationHeader()),
               SliverList.list(
-                children: state.members.map((member) => _MemberRow(member: member)).toList(),
+                children: state.members
+                    .map((member) => _MemberRow(member: member))
+                    .toList(),
               )
             ],
           ),
@@ -361,23 +377,25 @@ class _BottomSheetState extends ConsumerState<_BottomSheet> {
     final state = ref.watch(shareProvider);
 
     return AnimatedPositioned(
-      duration: Duration(milliseconds: 10),  // Smooth animation duration
+      duration: const Duration(milliseconds: 10), // Smooth animation duration
       top: MediaQuery.of(context).size.height - _currentSheetHeight - 80,
       right: 10,
       child: FloatingActionButton.small(
         onPressed: () {
-          Utils.showSnackBar(context, '내 위치 추적모드 ${state.isTracking ? 'off' : 'on'}', durationSeconds: 1);
+          Utils.showSnackBar(
+              context, '내 위치 추적모드 ${state.isTracking ? 'off' : 'on'}',
+              durationSeconds: 1);
           ref.read(shareProvider.notifier).toggleTrackingButton();
           if (state.myLat != null && state.myLong != null) {
             widget.floatingAction?.call(lat: state.myLat!, lon: state.myLong!);
           }
           // Button action
         },
-        child: Icon(Icons.my_location),
-        shape: CircleBorder(),
+        shape: const CircleBorder(),
         splashColor: AppColor.grey3,
         foregroundColor: state.isTracking ? AppColor.main : AppColor.black1,
         backgroundColor: AppColor.white,
+        child: const Icon(Icons.my_location),
       ),
     );
   }
@@ -391,18 +409,21 @@ class _BottomSheetState extends ConsumerState<_BottomSheet> {
           Row(
             children: [
               Text(
-                Utils.makeMeetingHeaderLabel(DateTime.parse(state.roomModel!.encounterDate!)),
-                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 20, height: 1),
+                Utils.makeMeetingHeaderLabel(
+                    DateTime.parse(state.roomModel!.encounterDate!)),
+                style: const TextStyle(
+                    fontWeight: FontWeight.w500, fontSize: 20, height: 1),
                 maxLines: 2,
               ),
-              Spacer(),
+              const Spacer(),
               _copyButton(),
             ],
           ),
         const SizedBox(height: 5),
         Text(
           '${state.roomModel?.destinationName}',
-          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 24, height: 1),
+          style:
+              const TextStyle(fontWeight: FontWeight.w700, fontSize: 24, height: 1),
         ),
       ],
     );
@@ -416,7 +437,7 @@ class _BottomSheetState extends ConsumerState<_BottomSheet> {
         padding: EdgeInsets.zero,
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        textStyle: TextStyle(
+        textStyle: const TextStyle(
           fontWeight: FontWeight.w700,
           fontSize: 20,
         ),
@@ -449,7 +470,20 @@ class _MemberRow extends StatelessWidget {
         children: [
           if (member.imageUrl != "")
             ClipOval(
-              child: Image.network(member.imageUrl ?? '', width: 60, height: 60, fit: BoxFit.cover),
+              child: ClipOval(
+                child: CachedNetworkImage(
+                  imageUrl: member.imageUrl,
+                  width: 60,
+                  height: 60,
+                  fit: BoxFit.cover,
+                  // 로딩 중일 때 표시
+                  placeholder: (context, url) =>
+                      const CircularProgressIndicator(),
+                  // 에러 발생 시 표시
+                  errorWidget: (context, url, error) =>
+                      const Icon(Icons.account_circle),
+                ),
+              ),
             ),
           if (member.imageUrl == "")
             const Icon(
@@ -462,11 +496,15 @@ class _MemberRow extends StatelessWidget {
             children: [
               Text(
                 member.nickname,
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                style:
+                    const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
               ),
               Text(
                 '${member.destinationDistance}m 남음',
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: AppColor.grey1),
+                style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                    color: AppColor.grey1),
               ),
             ],
           ),

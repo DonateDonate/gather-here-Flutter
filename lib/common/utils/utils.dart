@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:image/image.dart' as img;
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -47,4 +50,20 @@ class Utils {
   static Future<void> requestPermissions() async {
     await Permission.notification.request();
   }
+
+  static Future<File> compressImage(File imageFile) async {
+    Uint8List imageBytes = await imageFile.readAsBytes();
+    img.Image? decodedImage = img.decodeImage(imageBytes);
+
+    if (decodedImage != null) {
+      img.Image resizedImage = img.copyResize(decodedImage, width: 800, height: 800);
+      Uint8List compressedImageBytes = Uint8List.fromList(img.encodeJpg(resizedImage, quality: 30));
+
+      final compressedImageFile = File(imageFile.path)..writeAsBytesSync(compressedImageBytes);
+      return compressedImageFile;
+    } else {
+      throw Exception("이미지 디코딩 실패");
+    }
+  }
+
 }

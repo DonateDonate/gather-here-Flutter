@@ -52,20 +52,6 @@ class MyPageProvider extends StateNotifier<MyPageState> {
     state = MyPageState(message: null);
   }
 
-  Future<void> changePassWord(String passWord) async {
-    try {
-      await memberRepository.patchChangePassWord(
-        body: PasswordModel(password: passWord),
-      );
-      state.message = '비밀번호가 변경되었습니다.';
-      _setState();
-    } catch (e) {
-      debugPrint('changePassWord Err: $e');
-      state.message = '비밀번호 변경에 실패하였습니다.';
-      _setState();
-    }
-  }
-
   Future<void> deleteMember() async {
     try {
       await authRepository.deleteMember();

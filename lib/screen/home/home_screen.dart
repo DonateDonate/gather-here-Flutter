@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:app_settings/app_settings.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import 'package:easy_debounce/easy_debounce.dart';
@@ -31,7 +32,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-
   @override
   Widget build(BuildContext context) {
     return DefaultLayout(
@@ -70,7 +70,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           labels: const ['4자리 코드를 입력해주세요'],
           onChanged: (text) async {
             ref.read(homeProvider.notifier).inviteCodeChanged(value: text[0]);
-            final result = await ref.read(homeProvider.notifier).tapInviteButton();
+            final result =
+                await ref.read(homeProvider.notifier).tapInviteButton();
 
             if (result != null) {
               context.pop();
@@ -147,11 +148,14 @@ class _SearchBarState extends ConsumerState<_SearchBar> {
       },
       icon: state.memberInfoModel?.profileImageUrl != null
           ? ClipOval(
-              child: Image.network(
-              state.memberInfoModel!.profileImageUrl!,
+              child: CachedNetworkImage(
+              imageUrl: state.memberInfoModel!.profileImageUrl!,
               width: 40,
               height: 40,
               fit: BoxFit.cover,
+              placeholder: (context, url) => const CircularProgressIndicator(),
+              errorWidget: (context, url, error) =>
+                  const Icon(Icons.account_circle),
             ))
           : const Icon(
               Icons.account_circle,
@@ -170,6 +174,7 @@ class _Map extends ConsumerStatefulWidget {
 }
 
 class _MapState extends ConsumerState<_Map> with WidgetsBindingObserver {
+
   final Completer<GoogleMapController> _controller = Completer<GoogleMapController>();
 
   late BitmapDescriptor _defaultMarker;
@@ -226,7 +231,6 @@ class _MapState extends ConsumerState<_Map> with WidgetsBindingObserver {
           _moveToTargetPosition(lat: state.lat!, lon: state.lon!);
         }
       });
-
     } else {
       showDialog(
         barrierDismissible: false,
@@ -249,7 +253,9 @@ class _MapState extends ConsumerState<_Map> with WidgetsBindingObserver {
   // CustomMarker 그리기
   Future<void> _loadCustomMarkers(List<SearchDocumentsModel> results) async {
     for (final result in results) {
-      final marker = await ref.read(homeProvider.notifier).createCustomMarkerBitmap(result.place_name!);
+      final marker = await ref
+          .read(homeProvider.notifier)
+          .createCustomMarkerBitmap(result.place_name!);
       // setState(() {
       result.markerIcon = marker;
       // });
@@ -259,15 +265,19 @@ class _MapState extends ConsumerState<_Map> with WidgetsBindingObserver {
   // 특정 위치로 카메라 포지션 이동
   void _moveToTargetPosition({required double lat, required double lon}) async {
     final GoogleMapController controller = await _controller.future;
-    final targetPosition = CameraPosition(target: LatLng(lat, lon), zoom: 14.4746);
-    await controller.animateCamera(CameraUpdate.newCameraPosition(targetPosition));
+    final targetPosition =
+        CameraPosition(target: LatLng(lat, lon), zoom: 14.4746);
+    await controller
+        .animateCamera(CameraUpdate.newCameraPosition(targetPosition));
   }
 
   // 검색 결과가 바뀔 때마다 카메라 이동, 마커 변경
   void _observeLocation(BuildContext superContext) {
-    ref.listen(homeProvider.select((value) => value.results), (prev, next) async {
+    ref.listen(homeProvider.select((value) => value.results),
+        (prev, next) async {
       if (prev != next && next.isNotEmpty) {
-        _moveToTargetPosition(lat: double.parse(next.first.y), lon: double.parse(next.first.x));
+        _moveToTargetPosition(
+            lat: double.parse(next.first.y), lon: double.parse(next.first.x));
 
         await _loadCustomMarkers(next);
 
@@ -327,7 +337,9 @@ class _MapState extends ConsumerState<_Map> with WidgetsBindingObserver {
           return Marker(
             markerId: MarkerId('${result.hashCode}'),
             position: LatLng(double.parse(result.y), double.parse(result.x)),
-            icon: isSelected ? BitmapDescriptor.defaultMarker : (result.markerIcon ?? _defaultMarker),
+            icon: isSelected
+                ? BitmapDescriptor.defaultMarker
+                : (result.markerIcon ?? _defaultMarker),
             infoWindow: InfoWindow(title: result.place_name),
             onTap: () async {
               ref.read(homeProvider.notifier).tapLocationMarker(result);
@@ -419,7 +431,8 @@ class _LocationListSheet extends ConsumerWidget {
     );
   }
 
-  Widget _rowItem(BuildContext context, WidgetRef ref, SearchDocumentsModel result) {
+  Widget _rowItem(
+      BuildContext context, WidgetRef ref, SearchDocumentsModel result) {
     return InkWell(
       onTap: () async {
         moveToPositionAction(double.parse(result.y), double.parse(result.x));
@@ -474,7 +487,8 @@ class _SelectedLocationSheet extends ConsumerWidget {
                 ),
                 Text(
                   '${state.selectedResult?.distance}m',
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.w700),
                 ),
               ],
             ),
@@ -501,7 +515,9 @@ class _SelectedLocationSheet extends ConsumerWidget {
             return DefaultDateDialog(
               destination: state.selectedResult!.place_name!,
               onTab: (dateTime, timeOfDay) async {
-                final result = await ref.read(homeProvider.notifier).tapStartSharingButton(dateTime, timeOfDay);
+                final result = await ref
+                    .read(homeProvider.notifier)
+                    .tapStartSharingButton(dateTime, timeOfDay);
 
                 if (result == null) {
                   Utils.showSnackBar(context, '방 생성에 실패했습니다. 다시 시도해주세요');

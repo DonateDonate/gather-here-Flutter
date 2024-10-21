@@ -1,8 +1,7 @@
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gather_here/common/components/default_alert_dialog.dart';
 import 'package:gather_here/common/components/default_layout.dart';
@@ -16,7 +15,6 @@ import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../common/const/colors.dart';
 import '../../common/storage/storage.dart';
-import '../login/login_screen.dart';
 import 'my_page_provider.dart';
 
 class MyPageScreen extends ConsumerWidget {
@@ -26,34 +24,45 @@ class MyPageScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(myPageProvider.select((value) => value.message), (prev, next) async {
-      if (prev != next && next != null) {
-        Utils.showSnackBar(context, next);
-      }
-    });
+    final memberState = ref.watch(memberInfoProvider);
 
-    ref.listen(memberInfoProvider.select((value) => value.message), (prev, next) async {
-      if (prev != next && next != null) {
-        Utils.showSnackBar(context, next);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (memberState.message != null) {
+        Utils.showSnackBar(context, memberState.message!);
       }
     });
 
     return DefaultLayout(
       title: '마이 페이지',
       child: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              _ProfileHeader(),
-              const SizedBox(height: 24),
-              _SettingList(),
-            ],
-          ),
+        child: Stack(
+          children: [
+            Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  _ProfileHeader(),
+                  const SizedBox(height: 24),
+                  _SettingList(),
+                ],
+              ),
+            ),
+            // 로딩 중일 때 반투명 배경과 로딩바를 화면에 띄움
+            if (memberState.isLoading)
+              Container(
+                color: Colors.black.withOpacity(0.5),
+                child: const Center(
+                  child: CircularProgressIndicator(
+                    color: AppColor.main,
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
   }
+
 }
 
 class _ProfileHeader extends ConsumerWidget {
@@ -61,8 +70,6 @@ class _ProfileHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final memberState = ref.watch(memberInfoProvider);
-
     return Row(
       children: [
         _profileImage(context, ref),
@@ -82,30 +89,39 @@ class _ProfileHeader extends ConsumerWidget {
     final memberState = ref.watch(memberInfoProvider);
     return GestureDetector(
       onTap: () async {
-        final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+        final pickedFile =
+            await ImagePicker().pickImage(source: ImageSource.gallery);
 
         if (pickedFile != null) {
           final file = File(pickedFile.path);
-          ref.read(memberInfoProvider.notifier).changeProfileImage(file);
+          ref.read(memberInfoProvider.notifier).compressedFile(file);
         }
       },
       child: Stack(
         children: [
           if (memberState.memberInfoModel?.profileImageUrl != null)
             ClipOval(
-              child: Image.network(
-                memberState.memberInfoModel!.profileImageUrl!,
+              child: CachedNetworkImage(
+                imageUrl: memberState.memberInfoModel!.profileImageUrl!,
                 width: 64,
                 height: 64,
                 fit: BoxFit.cover,
+                placeholder: (context, url) =>
+                    const CircularProgressIndicator(),
+                errorWidget: (context, url, error) =>
+                    const Icon(Icons.account_circle),
               ),
             ),
-          if (memberState.memberInfoModel?.profileImageUrl == null) const Icon(Icons.account_circle, size: 64),
+          if (memberState.memberInfoModel?.profileImageUrl == null)
+            const Icon(Icons.account_circle, size: 64),
           Positioned(
             bottom: 4,
             right: 4,
             child: Container(
-              decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, border: Border.all(width: 1)),
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  border: Border.all(width: 1)),
               child: const Icon(Icons.edit, size: 15),
             ),
           ),
@@ -132,7 +148,9 @@ class _ProfileHeader extends ConsumerWidget {
                   title: '어떤 닉네임으로 변경할까요?',
                   labels: ['2~20자 이내로 입력해주세요'],
                   onChanged: (nickName) async {
-                    await ref.read(memberInfoProvider.notifier).changeNickName(nickName.last);
+                    await ref
+                        .read(memberInfoProvider.notifier)
+                        .changeNickName(nickName.last);
                     context.pop();
                   },
                 );
@@ -140,7 +158,7 @@ class _ProfileHeader extends ConsumerWidget {
             );
           },
           icon: Icon(Icons.edit, size: 18),
-        )
+        ),
       ],
     );
   }
@@ -167,16 +185,27 @@ class _SettingList extends ConsumerWidget {
 
     return Container(
       padding: EdgeInsets.all(8),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.all(Radius.circular(8))),
+      decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.all(Radius.circular(8))),
       child: ListView(
         physics: NeverScrollableScrollPhysics(),
         shrinkWrap: true,
         children: [
-          _settingRow(title: '비밀번호 변경', icon: Icons.key, onTap: () => _changePassword(context, ref)),
+          _settingRow(
+              title: '비밀번호 변경',
+              icon: Icons.key,
+              onTap: () => _changePassword(context, ref)),
           const SizedBox(height: 16),
-          _settingRow(title: '로그아웃', icon: Icons.logout, onTap: () => ref.read(myPageProvider.notifier).logout()),
+          _settingRow(
+              title: '로그아웃',
+              icon: Icons.logout,
+              onTap: () => ref.read(myPageProvider.notifier).logout()),
           const SizedBox(height: 16),
-          _settingRow(title: '회원탈퇴', icon: Icons.cancel, onTap: () => _withDrawl(context, ref)),
+          _settingRow(
+              title: '회원탈퇴',
+              icon: Icons.cancel,
+              onTap: () => _withDrawl(context, ref)),
           const SizedBox(height: 16),
           _settingRow(title: '서비스 이용약관', icon: Icons.description, indicator: true, onTap: () {
             launchUrlString('https://placid-sneeze-769.notion.site/11f29e9854d48036a272c3cbb59d9e62');
@@ -186,8 +215,10 @@ class _SettingList extends ConsumerWidget {
             context.pushNamed(DeveloperScreen.name);
           }),
           const SizedBox(height: 16),
-          _settingRow(title: '버전정보', icon: Icons.info, subTitle: storageState.appInfo.toString()),
-
+          _settingRow(
+              title: '버전정보',
+              icon: Icons.info,
+              subTitle: storageState.appInfo.toString()),
         ],
       ),
     );
@@ -212,7 +243,9 @@ class _SettingList extends ConsumerWidget {
             final changePw = textList[1];
             final changePwConfirm = textList[2];
 
-            if (currentPw.isEmpty || changePw.isEmpty || changePwConfirm.isEmpty) {
+            if (currentPw.isEmpty ||
+                changePw.isEmpty ||
+                changePwConfirm.isEmpty) {
               Utils.showSnackBar(context, '빈칸을 채워주세요');
             } else if (changePw.length < 4 || changePwConfirm.length < 4) {
               Utils.showSnackBar(context, '비밀번호는 4자리 이상으로 설정해 주세요');
@@ -221,8 +254,10 @@ class _SettingList extends ConsumerWidget {
             } else if (changePw != changePwConfirm) {
               Utils.showSnackBar(context, '바꿀 비밀번호가 일치하지 않습니다');
             } else {
-              await ref.read(myPageProvider.notifier).changePassWord(changePw);
-              await ref.read(storageKeyProvider.notifier).updatePassWd(changePw);
+              await ref.read(memberInfoProvider.notifier).changePassWord(changePw);
+              await ref
+                  .read(storageKeyProvider.notifier)
+                  .updatePassWd(changePw);
               context.pop();
             }
           },
@@ -266,12 +301,16 @@ class _SettingList extends ConsumerWidget {
               ),
               child: Icon(icon, size: 24)),
           const SizedBox(width: 16),
-          Text(title, style: const TextStyle(fontSize: 16, color: AppColor.black2, fontWeight: FontWeight.w500)),
+          Text(title,
+              style: const TextStyle(
+                  fontSize: 16,
+                  color: AppColor.black2,
+                  fontWeight: FontWeight.w500)),
           const Spacer(),
           if (subTitle != null)
-            Text(subTitle, style: const TextStyle(fontSize: 16, color: AppColor.black2)),
-          if (indicator)
-            Icon(Icons.chevron_right)
+            Text(subTitle,
+                style: const TextStyle(fontSize: 16, color: AppColor.black2)),
+          if (indicator) const Icon(Icons.chevron_right)
         ],
       ),
     );
