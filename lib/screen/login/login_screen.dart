@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gather_here/common/utils/utils.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:gather_here/screen/login/login_provider.dart';
@@ -22,22 +23,22 @@ class LoginScreen extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
           child: CustomScrollView(
-            physics: NeverScrollableScrollPhysics(),
+            physics: const NeverScrollableScrollPhysics(),
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             slivers: [
               SliverFillRemaining(
                 hasScrollBody: false,
                 child: Column(
                   children: [
-                    SizedBox(height: 30),
+                    const SizedBox(height: 30),
                     _TitleHeader(),
-                    Spacer(),
+                    const Spacer(),
                     _TextFields(),
-                    SizedBox(height: 40),
+                    const SizedBox(height: 40),
                     _LoginButton(),
-                    SizedBox(height: 40),
+                    const SizedBox(height: 40),
                     _BottomContainer(),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                   ],
                 ),
               )
@@ -54,7 +55,7 @@ class _TitleHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return const SizedBox(
       width: double.infinity,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,7 +91,7 @@ class _TextFields extends ConsumerWidget {
             ref.read(loginProvider.notifier).idValueChanged(value: text);
           },
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         DefaultTextFormField(
           title: '비밀번호',
           label: '4 ~ 10자',
@@ -120,8 +121,7 @@ class _LoginButton extends ConsumerWidget {
         if (result) {
           context.goNamed(HomeScreen.name);
         } else {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text('로그인 실패')));
+          Utils.showSnackBar(context, '로그인 실패');
         }
       },
     );
@@ -141,20 +141,20 @@ class _BottomContainer extends StatelessWidget {
             Expanded(
               child: Container(height: 1.5, color: AppColor.grey1),
             ),
-            SizedBox(width: 30),
-            Text('또는',
+            const SizedBox(width: 30),
+            const Text('또는',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-            SizedBox(width: 30),
+            const SizedBox(width: 30),
             Expanded(
               child: Container(height: 1.5, color: AppColor.grey1),
             ),
           ],
         ),
-        SizedBox(height: 80),
+        const SizedBox(height: 80),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
+            const Text(
               '아직 계정이 없으신가요?',
               style: TextStyle(
                 fontSize: 16,
@@ -166,7 +166,7 @@ class _BottomContainer extends StatelessWidget {
               onPressed: () {
                 context.goNamed(SignUpScreen.name);
               },
-              child: Text(
+              child: const Text(
                 '가입하기',
                 style: TextStyle(
                   fontSize: 16,
