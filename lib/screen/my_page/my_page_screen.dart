@@ -9,6 +9,7 @@ import 'package:gather_here/common/components/default_layout.dart';
 import 'package:gather_here/common/components/default_text_field_dialog.dart';
 import 'package:gather_here/common/provider/member_info_provider.dart';
 import 'package:gather_here/common/utils/utils.dart';
+import 'package:gather_here/screen/developer/developer_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -178,10 +179,12 @@ class _SettingList extends ConsumerWidget {
           _settingRow(title: '회원탈퇴', icon: Icons.cancel, onTap: () => _withDrawl(context, ref)),
           const SizedBox(height: 16),
           _settingRow(title: '서비스 이용약관', icon: Icons.description, indicator: true, onTap: () {
-            launchUrlString('https://www.naver.com');
+            launchUrlString('https://placid-sneeze-769.notion.site/11f29e9854d48036a272c3cbb59d9e62');
           }),
           const SizedBox(height: 16),
-          _settingRow(title: '개발자 정보', icon: Icons.developer_board, indicator: true, onTap: () {}),
+          _settingRow(title: '개발자 정보', icon: Icons.developer_board, indicator: true, onTap: () {
+            context.pushNamed(DeveloperScreen.name);
+          }),
           const SizedBox(height: 16),
           _settingRow(title: '버전정보', icon: Icons.info, subTitle: storageState.appInfo.toString()),
 

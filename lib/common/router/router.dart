@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gather_here/common/model/response/room_response_model.dart';
+import 'package:gather_here/screen/developer/developer_screen.dart';
 import 'package:gather_here/screen/my_page/my_page_screen.dart';
 import 'package:gather_here/screen/share/share_screen.dart';
 import 'package:gather_here/screen/sign_up/sign_up_screen.dart';
@@ -53,6 +54,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/my_page',
         name: MyPageScreen.name,
         builder: (context, state) => MyPageScreen(),
+        routes: [
+          GoRoute(path: 'developer', name: DeveloperScreen.name, builder: (context, state) {
+            return DeveloperScreen();
+          })
+        ]
       ),
     ],
   );
