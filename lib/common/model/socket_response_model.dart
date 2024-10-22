@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:gather_here/common/const/colors.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'socket_response_model.g.dart';
@@ -29,15 +27,6 @@ class SocketMemberListModel {
   final double presentLng;
   final double destinationDistance;
   int? rank;
-
-  Color get color {
-    switch (rank) {
-      case 1: return AppColor.gold;
-      case 2: return AppColor.sliver;
-      case 3: return AppColor.bronze;
-      default: return Colors.white;
-    }
-  }
 
   SocketMemberListModel({
     required this.memberSeq,

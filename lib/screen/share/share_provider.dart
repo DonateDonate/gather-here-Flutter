@@ -145,7 +145,7 @@ class ShareProvider extends StateNotifier<ShareState> {
         state.markers = markers;
 
         for (int i = 0; i < state.members.length; i++) {
-          state.members[i].rank = i + 1;
+          state.members[i].rank = i+1;
         }
 
         _setState();
