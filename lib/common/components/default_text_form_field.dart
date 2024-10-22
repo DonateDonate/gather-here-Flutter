@@ -48,57 +48,62 @@ class _DefaultTextFormFieldState extends State<DefaultTextFormField> {
     if (widget.title.isNotEmpty) {
       calculatedHeight = 100;
     }
-    return SizedBox(
-      width: widget.width,
-      height: calculatedHeight,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (widget.title.isNotEmpty)
-            Text(
-              widget.title,
-              style: const TextStyle(
-                fontSize: 16.0,
-                color: AppColor.black1,
-                fontWeight: FontWeight.w700,
+    return TextSelectionTheme(
+      data: const TextSelectionThemeData(
+        selectionHandleColor: AppColor.main,
+        cursorColor: AppColor.black1
+      ),
+      child: SizedBox(
+        width: widget.width,
+        height: calculatedHeight,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (widget.title.isNotEmpty)
+              Text(
+                widget.title,
+                style: const TextStyle(
+                  fontSize: 16.0,
+                  color: AppColor.black1,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            if (widget.title.isNotEmpty)
+              const SizedBox(
+                height: 14.0,
+              ),
+            TextFormField(
+              controller: widget.controller,
+              validator: widget.formFieldValidator,
+              keyboardType: widget.keyboardType,
+              obscureText: widget.obscureText,
+              onChanged: widget.onChanged,
+              style: const TextStyle(fontSize: 16, color: AppColor.black1),
+              decoration: InputDecoration(
+                errorText: widget.errorText,
+                labelText: widget.label,
+                labelStyle: const TextStyle(fontSize: 16, color: Colors.black),
+                filled: true,
+                fillColor: widget.filledColor,
+                border: OutlineInputBorder(
+                    borderSide: const BorderSide(
+                      color: AppColor.grey2,
+                    ),
+                    borderRadius: BorderRadius.circular(widget.radius)),
+                enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(
+                      color: AppColor.grey2,
+                    ),
+                    borderRadius: BorderRadius.circular(widget.radius)),
+                focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(
+                      color: AppColor.black1,
+                    ),
+                    borderRadius: BorderRadius.circular(widget.radius)),
               ),
             ),
-          if (widget.title.isNotEmpty)
-            const SizedBox(
-              height: 14.0,
-            ),
-          TextFormField(
-            controller: widget.controller,
-            validator: widget.formFieldValidator,
-            cursorColor: AppColor.black1,
-            keyboardType: widget.keyboardType,
-            obscureText: widget.obscureText,
-            onChanged: widget.onChanged,
-            style: const TextStyle(fontSize: 16, color: AppColor.black1),
-            decoration: InputDecoration(
-              errorText: widget.errorText,
-              labelText: widget.label,
-              labelStyle: const TextStyle(fontSize: 16, color: Colors.black),
-              filled: true,
-              fillColor: widget.filledColor,
-              border: OutlineInputBorder(
-                  borderSide: const BorderSide(
-                    color: AppColor.grey2,
-                  ),
-                  borderRadius: BorderRadius.circular(widget.radius)),
-              enabledBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(
-                    color: AppColor.grey2,
-                  ),
-                  borderRadius: BorderRadius.circular(widget.radius)),
-              focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(
-                    color: AppColor.black1,
-                  ),
-                  borderRadius: BorderRadius.circular(widget.radius)),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
