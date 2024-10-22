@@ -15,7 +15,7 @@ class DesignSystemScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Design System')),
+      appBar: AppBar(title: const Text('Design System')),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -31,17 +31,17 @@ class DesignSystemScreen extends StatelessWidget {
                     children: [
                       Text(
                         list[index],
-                        style: TextStyle(fontSize: 18),
+                        style: const TextStyle(fontSize: 18),
                       ),
-                      Spacer(),
-                      Icon(Icons.chevron_right),
+                      const Spacer(),
+                      const Icon(Icons.chevron_right),
                     ],
                   ),
                 ),
               );
             },
             separatorBuilder: (context, index) {
-              return Divider();
+              return const Divider();
             },
             itemCount: list.length,
           ),

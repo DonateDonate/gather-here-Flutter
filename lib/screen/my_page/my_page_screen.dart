@@ -37,12 +37,12 @@ class MyPageScreen extends ConsumerWidget {
       child: SafeArea(
         child: Stack(
           children: [
-            Padding(
+            const Padding(
               padding: EdgeInsets.all(16.0),
               child: Column(
                 children: [
                   _ProfileHeader(),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
                   _SettingList(),
                 ],
               ),
@@ -66,7 +66,7 @@ class MyPageScreen extends ConsumerWidget {
 }
 
 class _ProfileHeader extends ConsumerWidget {
-  const _ProfileHeader({super.key});
+  const _ProfileHeader();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -146,7 +146,7 @@ class _ProfileHeader extends ConsumerWidget {
               builder: (BuildContext context) {
                 return DefaultTextFieldDialog(
                   title: '어떤 닉네임으로 변경할까요?',
-                  labels: ['2~20자 이내로 입력해주세요'],
+                  labels: const ['2~20자 이내로 입력해주세요'],
                   onChanged: (nickName) async {
                     await ref
                         .read(memberInfoProvider.notifier)
@@ -157,7 +157,7 @@ class _ProfileHeader extends ConsumerWidget {
               },
             );
           },
-          icon: Icon(Icons.edit, size: 18),
+          icon: const Icon(Icons.edit, size: 18),
         ),
       ],
     );
@@ -177,19 +177,19 @@ class _ProfileHeader extends ConsumerWidget {
 }
 
 class _SettingList extends ConsumerWidget {
-  const _SettingList({super.key});
+  const _SettingList();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final storageState = ref.watch(storageKeyProvider);
 
     return Container(
-      padding: EdgeInsets.all(8),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.all(8),
+      decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.all(Radius.circular(8))),
       child: ListView(
-        physics: NeverScrollableScrollPhysics(),
+        physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
         children: [
           _settingRow(

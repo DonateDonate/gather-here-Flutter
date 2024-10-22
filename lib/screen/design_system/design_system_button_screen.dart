@@ -8,7 +8,7 @@ class DesignSystemButtonScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Buttons')),
+      appBar: AppBar(title: const Text('Buttons')),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),

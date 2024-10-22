@@ -115,7 +115,6 @@ class HomeProvider extends StateNotifier<HomeState> {
       );
       return result;
     } catch (err) {
-      print('${err.toString()}');
       return null;
     }
   }
@@ -154,10 +153,9 @@ class HomeProvider extends StateNotifier<HomeState> {
         double.parse(state.selectedResult!.y),
         double.parse(state.selectedResult!.x),
       );
-      print(result.toString());
       return result;
     } catch (err) {
-      print(err.toString());
+      return null;
     }
   }
 

@@ -51,7 +51,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     final getAppInfoResult = await ref.read(splashProvier.notifier).getAppInfo();
 
     if (getAppInfoResult) {
-
       context.goNamed(HomeScreen.name);
     } else {
       context.goNamed(LoginScreen.name);

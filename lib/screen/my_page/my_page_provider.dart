@@ -1,7 +1,5 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:gather_here/common/model/request/password_model.dart';
 import 'package:gather_here/common/repository/member_repository.dart';
 import 'package:gather_here/common/router/router.dart';
 import 'package:gather_here/common/storage/storage.dart';
@@ -48,7 +46,7 @@ class MyPageProvider extends StateNotifier<MyPageState> {
 
   void _setState() async {
     state = MyPageState(message: state.message);
-    await Future.delayed(Duration(seconds: 1));
+    await Future.delayed(const Duration(seconds: 1));
     state = MyPageState(message: null);
   }
 

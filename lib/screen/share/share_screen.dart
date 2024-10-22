@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -40,7 +39,7 @@ class _ShareScreenState extends ConsumerState<ShareScreen> with WidgetsBindingOb
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       ref.read(shareProvider.notifier).timeTick();
     });
   }
@@ -115,15 +114,9 @@ class _ShareScreenState extends ConsumerState<ShareScreen> with WidgetsBindingOb
             ),
             icon: Container(
               height: 50,
-              padding: EdgeInsets.all(10.0),
-              child: Icon(
-                Icons.exit_to_app,
-                size: 30,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
+              padding: const EdgeInsets.all(10.0),
+              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+              child: const Icon(Icons.exit_to_app, size: 30),
             ),
           ),
         ),
@@ -154,7 +147,7 @@ class _ShareScreenState extends ConsumerState<ShareScreen> with WidgetsBindingOb
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w500,
-                    fontFeatures: [FontFeature.tabularFigures()],
+                    fontFeatures: const [FontFeature.tabularFigures()],
                     color: state.remainSeconds <= 60 ? AppColor.red : AppColor.black1,
                   ),
                 ),
@@ -221,8 +214,6 @@ class _MapState extends ConsumerState<_Map> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(shareProvider);
-
     return Stack(
       children: [
         _googleMap(),
@@ -253,8 +244,6 @@ class _MapState extends ConsumerState<_Map> {
   }
 
   Widget _refreshButton() {
-    final state = ref.watch(shareProvider);
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: SafeArea(
@@ -291,7 +280,7 @@ class _MapState extends ConsumerState<_Map> {
 class _BottomSheet extends ConsumerStatefulWidget {
   final void Function({required double lat, required double lon})? floatingAction;
 
-  const _BottomSheet({required this.floatingAction, super.key});
+  const _BottomSheet({required this.floatingAction});
 
   @override
   ConsumerState<_BottomSheet> createState() => _BottomSheetState();
@@ -314,8 +303,6 @@ class _BottomSheetState extends ConsumerState<_BottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(shareProvider);
-
     return Stack(
       children: [
         _memberListSheet(),
@@ -426,7 +413,7 @@ class _BottomSheetState extends ConsumerState<_BottomSheet> {
       ),
       iconAlignment: IconAlignment.end,
       label: Text('${state.roomModel?.shareCode}'),
-      icon: Icon(Icons.content_copy),
+      icon: const Icon(Icons.content_copy),
       onPressed: () {
         if (state.roomModel?.shareCode != null) {
           Clipboard.setData(ClipboardData(text: state.roomModel!.shareCode!));
@@ -443,7 +430,6 @@ class _MemberRow extends StatelessWidget {
   const _MemberRow({
     required this.index,
     required this.member,
-    super.key,
   });
 
   @override
@@ -494,7 +480,7 @@ class _MemberRow extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
               ),
               Text(
-                 '${Utils.addDistanceUnit(member.destinationDistance)} 남음',
+                '${Utils.addDistanceUnit(member.destinationDistance)} 남음',
                 style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: AppColor.grey1),
               ),
             ],

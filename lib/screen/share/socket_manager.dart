@@ -29,7 +29,6 @@ class SocketManager {
     );
 
     await _channel.ready;
-    print('Socket Connected');
   }
 
   Future<void> close() async {
@@ -43,7 +42,5 @@ class SocketManager {
   void deliveryMyInfo(SocketRequestModel model) {
     final jsonString = jsonEncode(model.toJson());
     _channel.sink.add(jsonString);
-
-    print('send Information!!');
   }
 }

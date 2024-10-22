@@ -96,13 +96,7 @@ class MemberInfoProvider extends StateNotifier<MemberInfoState> {
   }
 
   void compressedFile(File imageFile) async {
-    // setProgressIndicator(true);
-
-    final beforeCompressed = await imageFile.length();
     final compressedFile = await Utils.compressImage(imageFile);
-    final afterCompressed = await compressedFile.length();
-    print('압축 전: ${beforeCompressed}\n압축 후: ${afterCompressed}');
-
     changeProfileImage(compressedFile);
   }
 

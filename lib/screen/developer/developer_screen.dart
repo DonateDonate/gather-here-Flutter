@@ -9,13 +9,13 @@ class DeveloperScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultLayout(
+    return const DefaultLayout(
         appBarBackgroundColor: Colors.blueAccent,
         backgroundColor: Colors.blueAccent,
         titleColor: Colors.white,
         title: '팀원소개',
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -23,14 +23,14 @@ class DeveloperScreen extends StatelessWidget {
                 'Gather Here! 를\n개발한 사람들',
                 style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: AppColor.white),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               _Box(
                 title: 'Flutter',
                 iconName: ['flutter'],
                 names: ['김도연', '김종민'],
                 urls: ['https://github.com/FirstDo', 'https://github.com/spicypunch'],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               _Box(
                 title: 'Backend',
                 iconName: ['spring', 'ubuntu'],
@@ -54,7 +54,6 @@ class _Box extends StatelessWidget {
     required this.iconName,
     required this.names,
     required this.urls,
-    super.key,
   });
 
   @override
@@ -69,38 +68,34 @@ class _Box extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _StackHeader(),
+          _stackHeader(),
           const SizedBox(height: 10),
-          ...List.generate(names.length, (index) => index)
-              .map(
-                (index) => Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: InkWell(
-                    onTap: () {
-                      launchUrlString(urls[index]);
-                    },
-                    borderRadius: BorderRadius.circular(10),
-                    child: _member(names[index]),
-                  ),
-                ),
-              )
-              .toList(),
+          ...List.generate(names.length, (index) => index).map(
+            (index) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: InkWell(
+                onTap: () {
+                  launchUrlString(urls[index]);
+                },
+                borderRadius: BorderRadius.circular(10),
+                child: _member(names[index]),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _StackHeader() {
+  Widget _stackHeader() {
     return Row(
       children: [
-        Text(title, style: TextStyle(color: AppColor.white, fontSize: 24, fontWeight: FontWeight.bold)),
+        Text(title, style: const TextStyle(color: AppColor.white, fontSize: 24, fontWeight: FontWeight.bold)),
         const Spacer(),
-        ...iconName
-            .map((name) => Container(
-                  padding: EdgeInsets.only(right: 10),
-                  child: Image.asset('asset/img/$name.png', width: 20, height: 20, fit: BoxFit.fill),
-                ))
-            .toList(),
+        ...iconName.map((name) => Container(
+              padding: const EdgeInsets.only(right: 10),
+              child: Image.asset('asset/img/$name.png', width: 20, height: 20, fit: BoxFit.fill),
+            )),
       ],
     );
   }
@@ -113,14 +108,14 @@ class _Box extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(4),
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
             child: Image.asset('asset/img/github.png', width: 20, height: 20),
           ),
           const SizedBox(width: 10),
-          Text(name, style: TextStyle(color: AppColor.white, fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(name, style: const TextStyle(color: AppColor.white, fontSize: 18, fontWeight: FontWeight.bold)),
           const Spacer(),
-          Icon(Icons.chevron_right, color: AppColor.white),
+          const Icon(Icons.chevron_right, color: AppColor.white),
         ],
       ),
     );
