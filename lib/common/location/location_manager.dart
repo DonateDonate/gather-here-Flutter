@@ -29,19 +29,17 @@ class LocationManager {
       return false;
     }
 
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+
     switch (permission) {
-      case LocationPermission.denied:
-        permission = await Geolocator.requestPermission();
-        return await requestPermission();
-      case LocationPermission.deniedForever:
-        return false;
       case LocationPermission.whileInUse:
         return true;
       case LocationPermission.always:
         return true;
-      case LocationPermission.unableToDetermine:
-        permission = await Geolocator.requestPermission();
-        return await requestPermission();
+      default:
+        return false;
     }
   }
 

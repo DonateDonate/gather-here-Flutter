@@ -47,7 +47,7 @@ class Utils {
     }
   }
 
-  static Future<void> requestPermissions() async {
+  static Future<void> requestNotificationPermission() async {
     await Permission.notification.request();
   }
 

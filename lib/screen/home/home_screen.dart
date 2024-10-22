@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:app_settings/app_settings.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -199,6 +200,7 @@ class _MapState extends ConsumerState<_Map> with WidgetsBindingObserver {
   final Completer<GoogleMapController> _controller = Completer<GoogleMapController>();
 
   late BitmapDescriptor _defaultMarker;
+  bool _isNeed = false;
 
   static const CameraPosition _defaultPosition = CameraPosition(
     target: LatLng(37.5642135, -127.0016985),
@@ -220,7 +222,12 @@ class _MapState extends ConsumerState<_Map> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
-    if (state == AppLifecycleState.resumed) {
+    if (Platform.isIOS && state == AppLifecycleState.resumed) {
+      _setup();
+    }
+
+    if (Platform.isAndroid && AppLifecycleState.resumed == state && _isNeed) {
+      _isNeed = false;
       _setup();
     }
   }
@@ -252,6 +259,7 @@ class _MapState extends ConsumerState<_Map> with WidgetsBindingObserver {
             cancelTitle: null,
             onTabConfirm: () async {
               AppSettings.openAppSettings(type: AppSettingsType.location);
+              _isNeed = true;
             },
           );
         },

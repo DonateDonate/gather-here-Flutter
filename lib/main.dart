@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,7 +11,10 @@ import 'common/background/initialize_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Utils.requestPermissions();
+  if (Platform.isAndroid) {
+    await Utils.requestNotificationPermission();
+  }
+
   await initializeService();
   runApp(
     ProviderScope(observers: [Logger()], child: _App()),
