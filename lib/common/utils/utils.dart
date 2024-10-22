@@ -66,4 +66,17 @@ class Utils {
     }
   }
 
+  /*
+  900 -> 900m
+  2300 -> 2.3km
+   */
+  static String addDistanceUnit(double meters) {
+    final km = meters / 1000;
+
+    if (meters < 1000) {
+      return '${meters}m';
+    } else {
+      return '${km.toStringAsFixed(1)}km';
+    }
+  }
 }

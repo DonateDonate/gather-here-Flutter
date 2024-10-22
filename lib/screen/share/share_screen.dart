@@ -494,7 +494,7 @@ class _MemberRow extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
               ),
               Text(
-                '${member.destinationDistance}m 남음',
+                 '${Utils.addDistanceUnit(member.destinationDistance)} 남음',
                 style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: AppColor.grey1),
               ),
             ],

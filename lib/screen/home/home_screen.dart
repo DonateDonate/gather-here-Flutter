@@ -456,7 +456,7 @@ class _LocationListSheet extends ConsumerWidget {
           result.place_name ?? '',
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
-        subtitle: Text('${result.distance}m'),
+        subtitle: Text(Utils.addDistanceUnit(double.parse(result.distance ?? '0'))),
       ),
     );
   }
@@ -495,7 +495,7 @@ class _SelectedLocationSheet extends ConsumerWidget {
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w400),
                 ),
                 Text(
-                  '${state.selectedResult?.distance}m',
+                  Utils.addDistanceUnit(double.parse(state.selectedResult?.distance ?? '0')),
                   style: const TextStyle(
                       fontSize: 20, fontWeight: FontWeight.w700),
                 ),
