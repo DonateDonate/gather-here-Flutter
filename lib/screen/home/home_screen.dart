@@ -32,6 +32,27 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+
+  @override
+  void initState() {
+    super.initState();
+    _setup();
+  }
+
+  void _setup() async {
+    final room = await ref.read(homeProvider.notifier).getRoomInfo();
+
+    // room 정보가 있다면 shareScreen 으로 이동
+    if (room.roomSeq != null && mounted) {
+      context.pushNamed(
+        ShareScreen.name,
+        pathParameters: {'isHost': 'false'},
+        extra: room,
+      );
+      return;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultLayout(
@@ -208,18 +229,6 @@ class _MapState extends ConsumerState<_Map> with WidgetsBindingObserver {
     final result = await LocationManager().requestPermission();
 
     if (result) {
-      final room = await ref.read(homeProvider.notifier).getRoomInfo();
-
-      // room 정보가 있다면 shareScreen 으로 이동
-      if (room.roomSeq != null && mounted) {
-        context.pushNamed(
-          ShareScreen.name,
-          pathParameters: {'isHost': 'false'},
-          extra: room,
-        );
-        return;
-      }
-
       // defaultMarker UI설정
       _defaultMarker = await ref.read(homeProvider.notifier).createCustomMarkerBitmap('');
 
@@ -238,7 +247,7 @@ class _MapState extends ConsumerState<_Map> with WidgetsBindingObserver {
         builder: (BuildContext context) {
           return DefaultAlertDialog(
             title: '위치권한을 허용해주세요',
-            content: '사용자의 현재 위치를 지도에 나타내기 위해서\n 위치 권한허용이 필요해요 :)',
+            content: '사용자의 현재 위치를 지도에 나타내기 위해\n 위치 권한허용이 필요해요 :)',
             okTitle: '설정으로 이동',
             cancelTitle: null,
             onTabConfirm: () async {
