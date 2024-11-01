@@ -53,15 +53,10 @@ class SignUpScreen extends HookConsumerWidget {
                     const SizedBox(
                       height: 16,
                     ),
-                    SizedBox(
-                      width: double.infinity,
-                      child: _CheckBox(
-                        termsState: isTermsChecked.value,
-                        isChecked: (value) {
-                          isTermsChecked.value = value!;
-                        },
-                      ),
-                    ),
+                    _CheckBox(termsState: isTermsChecked.value, isChecked: (value) {
+                      isTermsChecked.value = value!;
+                    }),
+
                     const Spacer(),
                     DefaultButton(
                       title: '회원가입',
@@ -147,23 +142,21 @@ class _CheckBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Flexible(
-      child: CheckboxListTile(
-        title: GestureDetector(
-          onTap: () {
-            launchUrlString('https://github.com/yuminc03');
-          },
-          child: const Text(
-            '이용 약관에 동의해 주세요(필수)',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ),
-        value: termsState,
-        onChanged: (bool? value) {
-          isChecked(value);
+    return CheckboxListTile(
+      title: GestureDetector(
+        onTap: () {
+          launchUrlString('https://placid-sneeze-769.notion.site/11f29e9854d48036a272c3cbb59d9e62');
         },
-        activeColor: AppColor.main,
+        child: const Text(
+          '이용 약관에 동의해 주세요(필수)',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
+      value: termsState,
+      onChanged: (bool? value) {
+        isChecked(value);
+      },
+      activeColor: AppColor.main,
     );
   }
 }
